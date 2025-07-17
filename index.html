@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktivní přehled servisních úkonů</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals (Slate, Stone, Sky) -->
+    <!-- Application Structure Plan: Cílem je přeměnit statickou tabulku na dynamický nástroj. Struktura je navržena jako dashboard. Na levé straně (na větších obrazovkách) je ovládací panel s grafickým přehledem kategorií a filtry. Graf umožňuje rychlý pohled na objem úkonů v jednotlivých sekcích a je interaktivní – kliknutím na kategorii se vyfiltruje seznam. Hlavní část stránky zobrazuje jednotlivé servisní úkony jako karty, které lze filtrovat pomocí tlačítek kategorií a fulltextového vyhledávání (včetně nově přidaných SK kódů). Tento design byl zvolen, protože umožňuje uživatelům (např. technikům) rychle najít potřebný standardizovaný popis opravy a jeho SK kód, ať už procházením kategorií, nebo přímým vyhledáváním klíčových slov či SK, což výrazně zrychluje jejich práci. -->
+    <!-- Visualization & Content Choices: Data jsou primárně textová a kategorická. Pro vizualizaci byl zvolen horizontální sloupcový graf (Chart.js), který ukazuje počet definovaných úkonů v každé kategorii. Cíl: Porovnání. Interakce: Kliknutí na sloupec filtruje karty. Jednotlivé úkony jsou prezentovány jako karty (HTML/Tailwind), které nyní obsahují i SK kód. Cíl: Organizace a informování. Interakce: Filtrování a vyhledávání (JS), rozšířené o SK kódy. Tento přístup je optimální pro rychlou orientaci a vyhledávání v textových datech. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 1024px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .task-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .task-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .filter-btn.active {
+            background-color: #0284c7; /* sky-600 */
+            color: white;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Přehled servisních úkonů</h1>
+            <p class="mt-2 text-lg text-slate-600">Interaktivní nástroj pro rychlé vyhledávání standardizovaných popisů oprav a SK kódů.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <aside class="lg:col-span-1 p-6 bg-white rounded-xl shadow-sm">
+                <div class="prose prose-slate max-w-none mb-6">
+                    <h2 class="text-xl font-semibold mb-4 text-slate-900">Navigace a přehled</h2>
+                    <p>Tento panel slouží k rychlé orientaci a filtrování servisních úkonů. Můžete využít graf pro vizuální přehled kategorií, vybrat konkrétní kategorii pomocí tlačítek, nebo vyhledat úkon podle klíčového slova či SK kódu.</p>
+                </div>
+                
+                <div class="chart-container mb-8">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+
+                <div>
+                    <label for="search" class="block text-sm font-medium text-slate-700 mb-2">Vyhledat úkon (popis, SK):</label>
+                    <input type="text" id="search" placeholder="Např. baterie, S0033..." class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                </div>
+
+                <div class="mt-6">
+                    <h3 class="text-md font-semibold text-slate-800 mb-3">Filtrovat podle kategorie:</h3>
+                    <div id="filter-buttons" class="flex flex-wrap gap-2">
+                    </div>
+                </div>
+            </aside>
+
+            <main class="lg:col-span-3">
+                 <div class="prose prose-slate max-w-none mb-6">
+                    <h2 class="text-xl font-semibold text-slate-900">Seznam úkonů</h2>
+                    <p>Zde naleznete detailní seznam všech servisních úkonů. Každá karta reprezentuje jeden standardizovaný úkon. Pro zobrazení pouze relevantních položek použijte filtry v navigačním panelu.</p>
+                </div>
+                <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const serviceTasksData = [
+            { sku: 'S0033', category: 'Playstation', internal: 'LB1 - jedná se o výměnu HDD/SSD', external: 'Pro zákazníka výměna pevného disku' },
+            { sku: 'S0034', category: 'Playstation', internal: 'LB2 - jedná se o výměnu HDD/SSD u PS4 + výměna dvou potenciometrů u ovladačů', external: 'Pro zákazníka výměna ventilátoru, zdroje, mechaniky u PS4, nebo výměna dvou potenciometrů u jakéhokoliv playstation ovladače' },
+            { sku: 'S0035', category: 'Playstation', internal: 'LB3 - jedná se o výměnu více dílů u PS4 nebo výměnu jednoho dílu u PS5', external: 'Pro zákazníka výměna ventilátoru a zdroje a mechaniky zároveň u PS4, nebo výměna ventilátoru, zdroje, mechaniky u PS5' },
+            { sku: 'S0045', category: 'Playstation', internal: 'LB5 - jedná se o opravu ovladače', external: 'Pro zákazníka výměna jednoho potenciometru, výměna nabíjecího portu, výměna kloboučků, výměna tlačítek, výměna krytu ovladače' },
+            { sku: 'S0042', category: 'Xbox', internal: 'LB1 - jedná se o výměnu HDD/SSD u Xbox konzolí', external: 'Pro zákazníka výměna pevného disku' },
+            { sku: 'S0043', category: 'Xbox', internal: 'LB2 - jedná se o výměnu jednoho dílu u Xbox ONE/ Series S', external: 'Pro zákazníka výměna ventilátoru, zdroje, mechaniky u Xboxu ONE/ Series S' },
+            { sku: 'S0044', category: 'Xbox', internal: 'LB3 - jedná se o výměnu více dílů u Xbox ONE/Series S nebo jednoho dílu Xbox Series X', external: 'Pro zákazníka výměna ventilátoru a zdroje a mechaniky zároveň u Xboxu ONE/ Series S, nebo výměna ventilátoru, zdroje, mechaniky' },
+            { sku: 'S0037', category: 'Xbox', internal: 'LB5 - jedná se o opravu ovladačů Xbox', external: 'Pro zákazníka výměna jednoho potenciometru, výměna nabíjecího portu, výměna kloboučků, výměna tlačítek, výměna krytu ovladače' },
+            { sku: 'S0036', category: 'Nintendo', internal: 'LB4-jedná se o opravu konzolí nintendo', external: 'Pro zákazníka výměna baterie, větráku, čtečky herních karet, čtečky paměťových karet, kolejnic' },
+            { sku: 'S0038', category: 'Nintendo', internal: 'LB6-jedná se o opravu Joy-Con/ovladačů nintendo', external: 'Pro zákazníka výměna jednoho potenciometru, výměna baterie, výměna tlačítek, výměna krytu ovladače, výměna kolejnic' },
+            { sku: 'S8800', category: 'Diagnostiky a čištění', internal: 'Diagnostika ovladače', external: 'Pro zákazníka Diagnostika ovladače' },
+            { sku: 'S6605', category: 'Diagnostiky a čištění', internal: 'Diagnostika konzole', external: 'Pro zákazníka Diagnostika konzole' },
+            { sku: 'S8804', category: 'Diagnostiky a čištění', internal: 'Update/reinstalace operačního systému konzole', external: 'Pro zákazníka Update/reinstalace operačního systému konzole' },
+            { sku: 'S8777', category: 'Diagnostiky a čištění', internal: 'Čištění a přepastování konzolí PS4,PS5,Xbox One,X,S', external: 'Pro zákazníka Čištění a přepastování konzolí PS4,PS5,Xbox One,X,S' },
+            { sku: 'S0159', category: 'Diagnostiky a čištění', internal: 'Zpracování výkupu technikem na prodejně Konzole, Apple Watch', external: 'Pro zákazníka Zpracování výkupu technikem na prodejně Konzole, Apple Watch' },
+            { sku: 'S0050', category: 'Výkupy', internal: 'LB1 - jedná se o výměnu HDD/SSD, opravy Joy-Con/ovladačů nintendo', external: 'Pro zákazníka výměna pevného disku, výměna jednoho potenciometru, výměna baterie, výměna tlačítek, výměna krytu ovladače, výměna kolejnic' },
+            { sku: 'S0051', category: 'Výkupy', internal: 'LB2 - jedná se o opravu ovladačů Xbox,PS, oprava konzolí Nintendo 1 potenciometr (17 znaků v Able)', external: 'Pro zákazníka výměna jednoho potenciometru u všech ovladačů nebo výměna jednoho dílu u Nintendo konzole' },
+            { sku: 'S0052', category: 'Výkupy', internal: 'LB3 - oprava mechaniky PS/Xbox nebo čištění + přepastování (13 znaků v Able)', external: 'Pro zákazníka výměna mechaniky všechny Playstationy nebo všechny Xboxy, čištění a přepastování konzole' },
+            { sku: 'S0053', category: 'Výkupy', internal: 'LB4 - výměna více dílů u konzolí + výměna dvou potenciometrů u ovladačů (13 znaků v Able)', external: 'Pro zákazníka výměna ventilátoru a zdroje a mechaniky zároveň u všech konzolí nebo výměna dvou potenciometrů u všech ovladačů' },
+            { sku: 'S0019', category: 'iPhony/Mac', internal: 'Reinstalace iOS', external: 'Pro zákazníka Reinstalace iOS' },
+            { sku: 'S0003', category: 'iPhony/Mac', internal: 'Reinstalace MacOS', external: 'Pro zákazníka Reinstalace MacOS' },
+            { sku: 'S0001', category: 'iPhony/Mac', internal: 'Diagnostika zařízení a čištění iOS/Android', external: 'Pro zákazníka Diagnostika zařízení a čištění iOS/Android' },
+            { sku: 'S0102', category: 'iPhony/Mac', internal: 'Diagnostika zařízení a čištění Airpods/EarPods', external: 'Pro zákazníka Diagnostika zařízení a čištění Airpods/EarPods' },
+            { sku: 'S0160', category: 'iPhony/Mac', internal: 'Diagnostika a čištění DEMO a vratek', external: 'Pro zákazníka Diagnostika a čištění DEMO a vratek' },
+            { sku: 'S0158', category: 'iPhony/Mac', internal: 'Zpracování výkupu na prodejně technikem iPhone, Android, Mac', external: 'Pro zákazníka Zpracování výkupu na prodejně technikem iPhone, Android, Mac' },
+            { sku: 'S0018', category: 'iPhony/Mac', internal: 'Kontrola výkupu diagnostika a čištění následné odesílání např na jinou prodejnu', external: 'Pro zákazníka Kontrola výkupu diagnostika a čištění následné odesílání např na jinou prodejnu' },
+            { sku: 'S0031', category: 'iPhony/Mac', internal: 'Zamítnutí záruční reklamace', external: 'Pro zákazníka Zamítnutí záruční reklamace' },
+            { sku: '15642', category: 'iPhony/Mac', internal: 'Pokud díl není naskladněný a potřebuješ si zaúčtovat cenu opravy - použij tuto skladovou kartu', external: 'Pro zákazníka Pokud díl není naskladněný a potřebuješ si zaúčtovat cenu opravy - použij tuto skladovou kartu' },
+            { sku: 'S0021', category: 'iPhony/Mac', internal: 'Zamítnutí reklamace ze strany zákazníka', external: 'Pro zákazníka Zamítnutí reklamace ze strany zákazníka' },
+            { sku: '196266', category: 'iPhony/Mac', internal: 'Zprostředkování služby konzultantem', external: 'Pro zákazníka Zprostředkování služby konzultantem' },
+            { sku: 'S0063', category: 'iPhony/Mac', internal: 'Jakýkoliv díl na iPhone 6-11 (včetně pro modelů) pro ZKZ', external: 'Pro zákazníka výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 6 až 11' },
+            { sku: 'S0064', category: 'iPhony/Mac', internal: 'Jakýkoliv díl na iPhone 12 a výše nebo výměna 2 dílů na jakém koliv modelu pro ZKZ', external: 'Pro zákazníka výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 12 a dále, výměna displeje' },
+            { sku: 'S0065', category: 'iPhony/Mac', internal: 'Výměna housingu na jakýkoliv model - Platí jak u výkupu tak pro ZKZ', external: 'Pro zákazníka Výměna housingu na jakýkoliv model - Platí jak u výkupu tak pro ZKZ' },
+            { sku: 'S0016', category: 'iPhony/Mac', internal: 'Výměna jednoho dílu u iPhonu 6-11 (včetně pro modelů) u výkupu', external: 'Pro zákazníka výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 6 až 11' },
+            { sku: 'S0017', category: 'iPhony/Mac', internal: 'Výměna jednoho dílu u iPhonu 12 a výš nebo 2 dílů na jakém koliv modelu u výkupu', external: 'Pro zákazníka výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 12 a dále, výměna displeje a baterie zároveň' },
+        ];
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const tasksGrid = document.getElementById('tasks-grid');
+            const filterButtonsContainer = document.getElementById('filter-buttons');
+            const searchInput = document.getElementById('search');
+
+            const categories = [...new Set(serviceTasksData.map(task => task.category))];
+            let activeFilter = 'Vše';
+
+            function renderCards() {
+                tasksGrid.innerHTML = '';
+                const searchTerm = searchInput.value.toLowerCase();
+
+                serviceTasksData
+                    .filter(task => (activeFilter === 'Vše' || task.category === activeFilter) && 
+                                   (task.internal.toLowerCase().includes(searchTerm) || 
+                                    task.external.toLowerCase().includes(searchTerm) ||
+                                    task.sku.toLowerCase().includes(searchTerm)))
+                    .forEach(task => {
+                        const card = document.createElement('div');
+                        card.className = 'task-card bg-white p-5 rounded-lg shadow-md border border-slate-200 flex flex-col';
+                        card.dataset.category = task.category;
+                        
+                        card.innerHTML = `
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="inline-block bg-sky-100 text-sky-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">${task.category}</span>
+                                <span class="text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded">SK: ${task.sku}</span>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-slate-800 text-sm mb-1">Interní popis:</h4>
+                                <p class="text-sm text-slate-600 mb-3">${task.internal}</p>
+                            </div>
+                            <div class="mt-auto pt-3 border-t border-slate-200">
+                                <h4 class="font-semibold text-slate-800 text-sm mb-1">Text pro zákazníka:</h4>
+                                <p class="text-sm text-slate-900 font-medium">${task.external}</p>
+                            </div>
+                        `;
+                        tasksGrid.appendChild(card);
+                    });
+            }
+
+            function setupFilters() {
+                const buttons = ['Vše', ...categories];
+                filterButtonsContainer.innerHTML = buttons.map(category => 
+                    `<button class="filter-btn px-3 py-1.5 text-sm rounded-md transition-colors duration-200 ${category === 'Vše' ? 'active' : 'bg-slate-200 hover:bg-slate-300 text-slate-700'}" data-category="${category}">${category}</button>`
+                ).join('');
+
+                filterButtonsContainer.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') {
+                        activeFilter = e.target.dataset.category;
+                        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active', 'bg-sky-600', 'text-white'));
+                        document.querySelectorAll('.filter-btn').forEach(btn => {
+                            if(btn.dataset.category !== activeFilter) {
+                                btn.classList.add('bg-slate-200', 'hover:bg-slate-300', 'text-slate-700')
+                            }
+                        });
+                        e.target.classList.add('active');
+                        e.target.classList.remove('bg-slate-200', 'hover:bg-slate-300', 'text-slate-700');
+                        renderCards();
+                    }
+                });
+            }
+            
+            function setupChart() {
+                const ctx = document.getElementById('categoryChart').getContext('2d');
+                const categoryCounts = categories.map(cat => serviceTasksData.filter(task => task.category === cat).length);
+
+                const chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: categories,
+                        datasets: [{
+                            label: 'Počet úkonů',
+                            data: categoryCounts,
+                            backgroundColor: [
+                                'rgba(56, 189, 248, 0.6)',
+                                'rgba(16, 185, 129, 0.6)',
+                                'rgba(239, 68, 68, 0.6)',
+                                'rgba(245, 158, 11, 0.6)',
+                                'rgba(139, 92, 246, 0.6)',
+                                'rgba(99, 102, 241, 0.6)'
+                            ],
+                            borderColor: [
+                                'rgba(14, 165, 233, 1)',
+                                'rgba(5, 150, 105, 1)',
+                                'rgba(220, 38, 38, 1)',
+                                'rgba(217, 119, 6, 1)',
+                                'rgba(124, 58, 237, 1)',
+                                'rgba(79, 70, 229, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return ` Počet úkonů: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Počet definovaných úkonů'
+                                }
+                            }
+                        },
+                        onClick: (e, elements) => {
+                            if (elements.length > 0) {
+                                const clickedIndex = elements[0].index;
+                                const category = categories[clickedIndex];
+                                
+                                const button = document.querySelector(`.filter-btn[data-category="${category}"]`);
+                                if(button) {
+                                    button.click();
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            searchInput.addEventListener('input', renderCards);
+
+            renderCards();
+            setupFilters();
+            setupChart();
+        });
+    </script>
+</body>
+</html>
