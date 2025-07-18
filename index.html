@@ -9,9 +9,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals (Slate, Stone, Sky) with brand accents (Blue, Green, Red, Purple, Orange, Yellow) -->
+    <!-- Chosen Palette: Warm Neutrals (Slate, Stone, Sky) with brand accents (Blue, Green, Red, Purple, Orange, Yellow, Pink) -->
     <!-- Application Structure Plan: Původní dashboard rozložení s grafem bylo odstraněno na žádost uživatele. Nová struktura je jednodušší, jednolitá. Všechny ovládací prvky (vyhledávání, filtry kategorií) jsou umístěny nahoře nad seznamem úkonů pro snadný přístup. Seznam úkonů je zobrazen v mřížce pod filtry. Tento design zjednodušuje uživatelské rozhraní a zaměřuje se čistě na rychlé filtrování a vyhledávání dat bez doplňkových vizualizací. -->
-    <!-- Visualization & Content Choices: Graf byl odstraněn. Data jsou prezentována výhradně jako karty v mřížce (HTML/Tailwind). Nově byla přidána vizuální distinkce pomocí barev pro všechny kategorie pro rychlejší vizuální identifikaci. Aktivní filtr nyní barevně koresponduje s kategorií. Přidány údaje "Bonus", "Úkony" a seznam "Zařízení" s rozbalovací funkcí. Cíl: Informování a organizace. Interakce: Filtrování, vyhledávání a rozbalování detailů (JS). -->
+    <!-- Visualization & Content Choices: Graf byl odstraněn. Data jsou prezentována výhradně jako karty v mřížce (HTML/Tailwind). Nově byla přidána vizuální distinkce pomocí barev pro všechny kategorie pro rychlejší vizuální identifikaci. Aktivní filtr nyní barevně koresponduje s kategorií. Přidány údaje "Bonus", "Úkony" a seznam "Zařízení" s rozbalovací funkcí. Přidána funkce kopírování SK kódu po kliknutí. Karty pro kategorii "Ovladače" jsou zjednodušené. Cíl: Informování a organizace. Interakce: Filtrování, vyhledávání, rozbalování detailů a kopírování (JS). -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
@@ -23,6 +23,20 @@
         .task-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .copy-feedback {
+            position: absolute;
+            top: -28px;
+            right: 0;
+            background-color: #22c55e; /* green-500 */
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -58,11 +72,11 @@
         const serviceTasksData = [
             { sku: 'S0033', category: 'Playstation', internal: 'LB1 - jedná se o výměnu HDD/SSD', external: 'Pro zákazníka výměna pevného disku', bonus: 100, ukony: 0.75, devices: 'PS4, PS4 Pro, PS5, PS5 Slim' },
             { sku: 'S0034', category: 'Playstation', internal: 'LB2 - jedná se o výměnu HDD/SSD u PS4 + výměna dvou potenciometrů u ovladačů', external: 'Pro zákazníka výměna ventilátoru, zdroje, mechaniky u PS4, nebo výměna dvou potenciometrů u jakéhokoliv playstation ovladače', bonus: 170, ukony: 1.5, devices: 'PS4, PS4 Slim, PS4 Pro, ovladače Xbox, ovladače PlayStation' },
-            { sku: 'S0035', category: 'Playstation', internal: 'LB3 - jedná se o výměnu více dílů u PS4 nebo výměnu jednoho dílu u PS5', external: 'Pro zákazníka výměna ventilátoru a zdroje a mechaniky zároveň u PS4, nebo výměna ventilátoru, zdroje, mechaniky u PS5', bonus: 250, ukony: 1.75, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim' },
+            { sku: 'S0035', category: 'Playstation', internal: 'LB3 - jedná se o výměnu více dílů u PS4 nebo výměnu jednoho dílu u PS5', external: 'Pro zákazníka výměna ventilátoru, zdroje a mechaniky zároveň u PS4, nebo výměna ventilátoru, zdroje, mechaniky u PS5', bonus: 250, ukony: 1.75, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim' },
             { sku: 'S0045', category: 'Playstation', internal: 'LB5 - jedná se o opravu ovladače', external: 'Pro zákazníka výměna jednoho potenciometru, výměna nabíjecího portu, výměna kloboučků, výměna tlačítek, výměna krytu ovladače', bonus: 130, ukony: 1.25, devices: 'ovladače PlayStation' },
             { sku: 'S0042', category: 'Xbox', internal: 'LB1 - jedná se o výměnu HDD/SSD u Xbox konzolí', external: 'Pro zákazníka výměna pevného disku', bonus: 100, ukony: 1, devices: 'Xbox One S, Xbox One X, Xbox Series S' },
             { sku: 'S0043', category: 'Xbox', internal: 'LB2 - jedná se o výměnu jednoho dílu u Xbox ONE/ Series S', external: 'Pro zákazníka výměna ventilátoru, zdroje, mechaniky u Xboxu ONE/ Series S', bonus: 170, ukony: 1.5, devices: 'Xbox One S, Xbox One X, Xbox Series S' },
-            { sku: 'S0044', category: 'Xbox', internal: 'LB3 - jedná se o výměnu více dílů u Xbox ONE/Series S nebo jednoho dílu Xbox Series X', external: 'Pro zákazníka výměna ventilátoru a zdroje a mechaniky zároveň u Xboxu ONE/ Series S, nebo výměna ventilátoru, zdroje, mechaniky', bonus: 250, ukony: 2, devices: 'Xbox One S, Xbox One X, Xbox Series S' },
+            { sku: 'S0044', category: 'Xbox', internal: 'LB3 - jedná se o výměnu více dílů u Xbox ONE/Series S nebo jednoho dílu Xbox Series X', external: 'Pro zákazníka výměna ventilátoru, zdroje a mechaniky zároveň u Xboxu ONE/ Series S, nebo výměna ventilátoru, zdroje, mechaniky', bonus: 250, ukony: 2, devices: 'Xbox One S, Xbox One X, Xbox Series S' },
             { sku: 'S0037', category: 'Xbox', internal: 'LB5 - jedná se o opravu ovladačů Xbox', external: 'Pro zákazníka výměna jednoho potenciometru, výměna nabíjecího portu, výměna kloboučků, výměna tlačítek, výměna krytu ovladače', bonus: 130, ukony: 1.25, devices: 'ovladače Xbox' },
             { sku: 'S0036', category: 'Nintendo', internal: 'LB4-jedná se o opravu konzolí nintendo', external: 'Pro zákazníka výměna baterie, větráku, čtečky herních karet, čtečky paměťových karet, kolejnic', bonus: 150, ukony: 1.5, devices: 'Nintendo, Nintendo Lite, Nintendo OLED' },
             { sku: 'S0038', category: 'Nintendo', internal: 'LB6-jedná se o opravu Joy-Con/ovladačů nintendo', external: 'Pro zákazníka výměna jednoho potenciometru, výměna baterie, výměna tlačítek, výměna krytu ovladače, výměna kolejnic', bonus: 100, ukony: 1, devices: 'Joy-Con' },
@@ -72,9 +86,9 @@
             { sku: 'S8777', category: 'Diagnostiky a čištění', internal: 'Čištění a přepastování konzolí PS4,PS5,Xbox One,X,S', external: '//////////', bonus: 214, ukony: 1, devices: '//////////' },
             { sku: 'S0159', category: 'Diagnostiky a čištění', internal: 'Zpracování výkupu technikem na prodejně Konzole, Apple Watch', external: '//////////', bonus: 100, ukony: 0.38, devices: 'Apple Watch, PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S' },
             { sku: 'S0050', category: 'Výkupy', internal: 'LB1 - jedná se o výměnu HDD/SSD, opravy Joy-Con/ovladačů nintendo', external: 'výměna pevného disku, výměna jednoho potenciometru, výměna baterie, výměna tlačítek, výměna krytu ovladače, výměna kolejnic', bonus: 80, ukony: 0.75, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S, Joy-Con' },
-            { sku: 'S0051', category: 'Výkupy', internal: 'LB2 - jedná se o opravu ovladačů Xbox,PS, oprava konzolí Nintendo 1 potenciometr (17 znaků v Able)', external: 'výměna jednoho potenciometru u všech ovladačů nebo výměna jednoho dílu u Nintendo konzole', bonus: 100, ukony: 1.25, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S' },
-            { sku: 'S0052', category: 'Výkupy', internal: 'LB3 - oprava mechaniky PS/Xbox nebo čištění + přepastování (13 znaků v Able)', external: 'výměna mechaniky všechny Playstationy nebo všechny Xboxy, čištění a přepastování konzole', bonus: 120, ukony: 1.5, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S' },
-            { sku: 'S0053', category: 'Výkupy', internal: 'LB4 - výměna více dílů u konzolí + výměna dvou potenciometrů u ovladačů (13 znaků v Able)', external: 'výměna ventilátoru a zdroje a mechaniky zároveň u všech konzolí nebo výměna dvou potenciometrů u všech ovladačů', bonus: 150, ukony: 1.5, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S, ovladače Xbox, ovladače PlayStation' },
+            { sku: 'S0051', category: 'Výkupy', internal: 'LB2 - jedná se o opravu ovladačů Xbox,PS, oprava konzolí Nintendo 1 potenciometr (17 znaků v Abře)', external: 'výměna jednoho potenciometru u všech ovladačů nebo výměna jednoho dílu u Nintendo konzole', bonus: 100, ukony: 1.25, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S' },
+            { sku: 'S0052', category: 'Výkupy', internal: 'LB3 - oprava mechaniky PS/Xbox nebo čištění + přepastování (13 znaků v Abře)', external: 'výměna mechaniky všechny Playstationy nebo všechny Xboxy, čištění a přepastování konzole', bonus: 120, ukony: 1.5, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S' },
+            { sku: 'S0053', category: 'Výkupy', internal: 'LB4 - výměna více dílů u konzolí + výměna dvou potenciometrů u ovladačů (13 znaků v Abře)', external: 'výměna ventilátoru a zdroje a mechaniky zároveň u všech konzolí nebo výměna dvou potenciometrů u všech ovladačů', bonus: 150, ukony: 1.5, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S, ovladače Xbox, ovladače PlayStation' },
             { sku: 'S0019', category: 'iPhony/Mac', internal: 'Reinstalace iOS', external: '//////////', bonus: 65, ukony: 1, devices: '//////////' },
             { sku: 'S0003', category: 'iPhony/Mac', internal: 'Reinstalace MacOS', external: '//////////', bonus: 165, ukony: 1, devices: '//////////' },
             { sku: 'S0001', category: 'iPhony/Mac', internal: 'Diagnostika zařízení a čištění iOS/Android', external: '//////////', bonus: 74, ukony: 1, devices: '//////////' },
@@ -91,6 +105,19 @@
             { sku: 'S0065', category: 'iPhony/Mac', internal: 'Výměna housingu na jakýkoliv model - Platí jak u výkupu tak pro ZKZ', external: '//////////', bonus: 100, ukony: 1.25, devices: 'iPhone 6, iPhone 6 Plus, iPhone 7, iPhone 7 Plus, iPhone 8, iPhone 8 Plus, iPhone X, iPhone XS, iPhone XS Max, iPhone XR, iPhone 11, iPhone 11 Pro, iPhone 11 Pro Max, iPhone 12 mini, iPhone 12, iPhone 12 Pro, iPhone 12 Pro Max, iPhone 13 mini, iPhone 13, iPhone 13 Pro, iPhone 13 Pro Max, iPhone 14, iPhone 14 Plus, iPhone 14 Pro, iPhone 14 Pro Max' },
             { sku: 'S0016', category: 'iPhony/Mac', internal: 'Výměna jednoho dílu u iPhonu 6-11 (včetně pro modelů) u výkupu', external: 'výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 6 až 11', bonus: 150, ukony: 1.5, devices: 'iPhone 6, iPhone 6 Plus, iPhone 7, iPhone 7 Plus, iPhone 8, iPhone 8 Plus, iPhone X, iPhone XS, iPhone XS Max, iPhone XR, iPhone 11, iPhone 11 Pro, iPhone 11 Pro Max' },
             { sku: 'S0017', category: 'iPhony/Mac', internal: 'Výměna jednoho dílu u iPhonu 12 a výš nebo 2 dílů na jakém koliv modelu u výkupu', external: 'výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 12 a dále, výměna displeje a baterie zároveň', bonus: 150, ukony: 1.5, devices: 'iPhone 12 mini, iPhone 12, iPhone 12 Pro, iPhone 12 Pro Max, iPhone 13 mini, iPhone 13, iPhone 13 Pro, iPhone 13 Pro Max, iPhone 14, iPhone 14 Plus, iPhone 14 Pro, iPhone 14 Pro Max' },
+            { sku: 'P77777', category: 'Ovladače', internal: 'DualSense Wireless Controller bílý', external: '', bonus: 0, ukony: 0, devices: '' },
+            { sku: 'P77778', category: 'Ovladače', internal: 'DualSense Wireless Controller mix barev', external: '', bonus: 0, ukony: 0, devices: '' },
+            { sku: 'P77779', category: 'Ovladače', internal: 'Sony DualShock 4 Controller Black V2', external: '', bonus: 0, ukony: 0, devices: '' },
+            { sku: 'P77780', category: 'Ovladače', internal: 'Sony DualShock 4 Controller V2 mix barev', external: '', bonus: 0, ukony: 0, devices: '' },
+            { sku: 'P77784', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair neonově červený/neonově modrý', external: '', bonus: 0, ukony: 0, devices: '' },
+            { sku: 'P77785', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair mix barev', external: '', bonus: 0, ukony: 0, devices: '' },
+            { sku: 'P77786', category: 'Ovladače', internal: 'Nintendo Switch Pro Controller ovladač mix barev', external: '', bonus: 0, ukony: 0, devices: '' },
+            { sku: 'P77787', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (USB-C)', external: '', bonus: 0, ukony: 0, devices: '' },
+            { sku: 'P77788', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (micro USB)', external: '', bonus: 0, ukony: 0, devices: '' },
+            { sku: 'P77789', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (USB-C)', external: '', bonus: 0, ukony: 0, devices: '' },
+            { sku: 'P77790', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (micro USB)', external: '', bonus: 0, ukony: 0, devices: '' },
+            { sku: 'P77791', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (USB-C)', external: '', bonus: 0, ukony: 0, devices: '' },
+            { sku: 'P77792', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (micro USB)', external: '', bonus: 0, ukony: 0, devices: '' },
         ];
         
         document.addEventListener('DOMContentLoaded', () => {
@@ -146,45 +173,69 @@
                                 categoryBgClass = 'bg-yellow-100';
                                 categoryTextClass = 'text-yellow-800';
                                 break;
+                            case 'Ovladače':
+                                categoryBgClass = 'bg-pink-100';
+                                categoryTextClass = 'text-pink-800';
+                                break;
                         }
 
-                        let devicesHtml = '';
-                        if (task.devices && task.devices !== '//////////') {
-                            const deviceList = task.devices.split(',').map(d => d.trim());
-                            const visibleDevices = deviceList.slice(0, 4);
-                            const hiddenDevices = deviceList.slice(4);
+                        let cardContent = '';
 
-                            devicesHtml = `
-                                <div class="mt-3 pt-3 border-t border-slate-200">
-                                    <h4 class="font-semibold text-slate-800 text-sm mb-2">Zařízení:</h4>
-                                    <div class="flex flex-wrap gap-2">
-                                        ${visibleDevices.map(d => `<span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-md">${d}</span>`).join('')}
-                                        ${hiddenDevices.length > 0 ? `<div class="hidden-devices hidden w-full flex-wrap gap-2 mt-2">${hiddenDevices.map(d => `<span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-md">${d}</span>`).join('')}</div>` : ''}
+                        if (task.category === 'Ovladače') {
+                            cardContent = `
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="inline-block ${categoryBgClass} ${categoryTextClass} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
+                                    <div class="relative">
+                                        <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
+                                        <div class="copy-feedback">Zkopírováno!</div>
                                     </div>
-                                    ${hiddenDevices.length > 0 ? `<button class="show-more-btn text-sm text-sky-600 hover:text-sky-800 mt-2 font-medium" data-task-index="${index}">další...</button>` : ''}
                                 </div>
+                                <div>
+                                    <h4 class="font-semibold text-slate-800 text-sm mb-1">Název ovladače:</h4>
+                                    <p class="text-sm text-slate-600">${task.internal}</p>
+                                </div>
+                            `;
+                        } else {
+                            let devicesHtml = '';
+                            if (task.devices && task.devices !== '//////////') {
+                                const deviceList = task.devices.split(',').map(d => d.trim());
+                                const visibleDevices = deviceList.slice(0, 4);
+                                const hiddenDevices = deviceList.slice(4);
+
+                                devicesHtml = `
+                                    <div class="mt-3 pt-3 border-t border-slate-200">
+                                        <h4 class="font-semibold text-slate-800 text-sm mb-2">Zařízení:</h4>
+                                        <div class="flex flex-wrap gap-2">
+                                            ${visibleDevices.map(d => `<span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-md">${d}</span>`).join('')}
+                                            ${hiddenDevices.length > 0 ? `<div class="hidden-devices hidden w-full flex-wrap gap-2 mt-2">${hiddenDevices.map(d => `<span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-md">${d}</span>`).join('')}</div>` : ''}
+                                        </div>
+                                        ${hiddenDevices.length > 0 ? `<button class="show-more-btn text-sm text-sky-600 hover:text-sky-800 mt-2 font-medium" data-task-index="${index}">další...</button>` : ''}
+                                    </div>
+                                `;
+                            }
+                            cardContent = `
+                                <div class="flex justify-between items-start mb-3 gap-2">
+                                    <span class="inline-block ${categoryBgClass} ${categoryTextClass} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
+                                    <div class="flex items-center gap-2 flex-wrap justify-end relative">
+                                        <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2 py-1 rounded">Bonus: ${task.bonus}</span>
+                                        <span class="text-xs font-mono bg-cyan-100 text-cyan-800 px-2 py-1 rounded">Úkony: ${task.ukony}</span>
+                                        <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
+                                        <div class="copy-feedback">Zkopírováno!</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-slate-800 text-sm mb-1">Interní popis:</h4>
+                                    <p class="text-sm text-slate-600 mb-3">${task.internal}</p>
+                                </div>
+                                <div class="mt-auto pt-3 border-t border-slate-200">
+                                    <h4 class="font-semibold text-slate-800 text-sm mb-1">Co jsem opravil:</h4>
+                                    <p class="text-sm text-slate-900 font-medium">${task.external}</p>
+                                </div>
+                                ${devicesHtml}
                             `;
                         }
                         
-                        card.innerHTML = `
-                            <div class="flex justify-between items-start mb-3 gap-2">
-                                <span class="inline-block ${categoryBgClass} ${categoryTextClass} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
-                                <div class="flex items-center gap-2 flex-wrap justify-end">
-                                    <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2 py-1 rounded">Bonus: ${task.bonus}</span>
-                                    <span class="text-xs font-mono bg-cyan-100 text-cyan-800 px-2 py-1 rounded">Úkony: ${task.ukony}</span>
-                                    <span class="text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded">SK: ${task.sku}</span>
-                                </div>
-                            </div>
-                            <div>
-                                <h4 class="font-semibold text-slate-800 text-sm mb-1">Interní popis:</h4>
-                                <p class="text-sm text-slate-600 mb-3">${task.internal}</p>
-                            </div>
-                            <div class="mt-auto pt-3 border-t border-slate-200">
-                                <h4 class="font-semibold text-slate-800 text-sm mb-1">Co jsem opravil:</h4>
-                                <p class="text-sm text-slate-900 font-medium">${task.external}</p>
-                            </div>
-                            ${devicesHtml}
-                        `;
+                        card.innerHTML = cardContent;
                         tasksGrid.appendChild(card);
                     });
             }
@@ -203,6 +254,8 @@
                         return ['bg-orange-600', 'text-white', 'font-semibold'];
                     case 'iPhony/Mac':
                         return ['bg-yellow-500', 'text-slate-900', 'font-semibold'];
+                    case 'Ovladače':
+                        return ['bg-pink-600', 'text-white', 'font-semibold'];
                     default: // 'Vše'
                         return ['bg-sky-600', 'text-white', 'font-semibold'];
                 }
@@ -247,6 +300,18 @@
                         hiddenDevices.classList.toggle('hidden');
                         button.textContent = isHidden ? 'skrýt' : 'další...';
                     }
+                }
+                if (e.target.classList.contains('sku-item')) {
+                    const sku = e.target.dataset.sku;
+                    navigator.clipboard.writeText(sku).then(() => {
+                        const feedback = e.target.nextElementSibling;
+                        feedback.style.opacity = '1';
+                        setTimeout(() => {
+                           feedback.style.opacity = '0';
+                        }, 1500);
+                    }).catch(err => {
+                        console.error('Failed to copy: ', err);
+                    });
                 }
             });
 
