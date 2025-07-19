@@ -190,12 +190,12 @@
                         if (task.category === 'Ovladače' || task.category === 'Zalistování výkupů' || task.category === 'Interní popisek výkupů') {
                              let title = 'Informace:';
                              if (task.category === 'Ovladače') title = 'Název ovladače:';
-                             if (task.category === 'Interní popisek výkupů') title = 'Zařízení:';
+                             if (task.category === 'Interní popisek výkupů') title = `${task.sku}:`;
 
                             cardContent = `
                                 <div class="flex justify-between items-center mb-3">
                                     <span class="inline-block ${categoryBgClass} ${categoryTextClass} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
-                                    ${task.sku !== 'PLACEHOLDER' ? 
+                                    ${task.sku !== 'PLACEHOLDER' && task.category !== 'Interní popisek výkupů' ? 
                                     `<div class="relative">
                                         <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
                                         <div class="copy-feedback">Zkopírováno!</div>
