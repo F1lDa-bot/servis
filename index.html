@@ -92,8 +92,15 @@
     </div>
 
     <script>
-        // Odkaz na Excel soubor na SharePointu/OneDrive
-        const excelFileLink = 'https://smartycz-my.sharepoint.com/:x:/g/personal/filip_musilek_iwant_cz/EbrGrCc9F_hNmvYR89OlVUMBi_2TquaH1OYaUMa03FqNOg?download=1';
+        // Původní odkaz na váš soubor
+        const originalUrl = 'https://smartycz-my.sharepoint.com/:x:/g/personal/filip_musilek_iwant_cz/EbrGrCc9F_hNmvYR89OlVUMBi_2TquaH1OYaUMa03FqNOg?download=1';
+
+        // Použijeme "prostředníka" (proxy), abychom obešli bezpečnostní omezení CORS
+        const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`;
+
+        // Tento finální odkaz použijeme pro načtení
+        const excelFileLink = proxiedUrl;
+
 
         // Funkce pro načtení a zpracování dat z Excel souboru
         async function loadDataFromExcel(url) {
