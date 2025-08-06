@@ -8,59 +8,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .task-card {
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-        }
-        .task-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-        }
-        .copy-feedback {
-            position: absolute;
-            top: -28px;
-            right: 0;
-            background-color: #22c55e; /* green-500 */
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-        }
-        .description-copy-feedback {
-            position: absolute;
-            bottom: -28px;
-            left: 0;
-            background-color: #22c55e;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            pointer-events: none;
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3b82f6;
-            border-radius: 50%;
-            width: 48px;
-            height: 48px;
-            animation: spin 1s linear infinite;
-            margin: 40px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .task-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .task-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        .copy-feedback { position: absolute; top: -28px; right: 0; background-color: #22c55e; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+        .description-copy-feedback { position: absolute; bottom: -28px; left: 0; background-color: #22c55e; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 48px; height: 48px; animation: spin 1s linear infinite; margin: 40px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -79,65 +34,61 @@
                 </div>
                 <div class="md:col-span-2">
                     <h3 class="text-sm font-medium text-slate-700 mb-2">Filtrovat podle kategorie:</h3>
-                    <div id="filter-buttons" class="flex flex-wrap gap-2">
-                    </div>
+                    <div id="filter-buttons" class="flex flex-wrap gap-2"></div>
                 </div>
             </div>
         </div>
 
         <main>
-            <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                </div>
+            <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
         </main>
     </div>
 
     <script>
-        // Původní odkaz na váš soubor
-        const originalUrl = 'https://smartycz-my.sharepoint.com/:x:/g/personal/filip_musilek_iwant_cz/EbrGrCc9F_hNmvYR89OlVUMBi_2TquaH1OYaUMa03FqNOg?download=1';
+        // Odkaz na publikovanou Google Tabulku ve formátu CSV
+        const googleSheetLink = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtZPkRi7-Cdwp9yZti3YARm_m0FqbZXhuCBRfKudWBBq_YNRKOpwRRNOK-0Je1kdeVbBf9gpxVHh8J/pub?gid=2068787422&single=true&output=csv';
 
-        // Použijeme "prostředníka" (proxy), abychom obešli bezpečnostní omezení CORS
-        const proxiedUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`;
-
-        // Tento finální odkaz použijeme pro načtení
-        const excelFileLink = proxiedUrl;
-
-
-        // Funkce pro načtení a zpracování dat z Excel souboru
-        async function loadDataFromExcel(url) {
+        // Funkce pro načtení a zpracování CSV dat z Google Tabulky
+        async function loadDataFromSheet(url) {
             const tasksGrid = document.getElementById('tasks-grid');
-            tasksGrid.innerHTML = '<div class="loader col-span-full"></div><p class="text-center col-span-full text-slate-600 -mt-8">Načítám data ze souboru, prosím o strpení...</p>';
-            
+            tasksGrid.innerHTML = '<div class="loader col-span-full"></div><p class="text-center col-span-full text-slate-600 -mt-8">Načítám data z Google Tabulky...</p>';
+
             try {
                 const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`Chyba sítě: ${response.statusText}`);
-                }
-                const arrayBuffer = await response.arrayBuffer();
-                const workbook = XLSX.read(arrayBuffer, { type: 'buffer' });
-                const worksheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[worksheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                if (!response.ok) throw new Error(`Chyba sítě: ${response.statusText}`);
+                const csvText = await response.text();
+                
+                // Převod CSV textu na pole objektů
+                const lines = csvText.trim().split(/\r\n|\n/);
+                const headers = lines[0].split(',');
+                const jsonData = lines.slice(1).map(line => {
+                    const values = line.split(',');
+                    return headers.reduce((obj, header, index) => {
+                        // Odstranění přebytečných uvozovek a mezer
+                        const value = values[index] ? values[index].trim().replace(/^"|"$/g, '') : '';
+                        obj[header.trim().replace(/^"|"$/g, '')] = value;
+                        return obj;
+                    }, {});
+                });
                 return jsonData;
+
             } catch (error) {
-                console.error('Chyba při načítání dat z Excelu:', error);
-                tasksGrid.innerHTML = '<p class="text-center col-span-full text-red-600 font-bold p-4 bg-red-100 rounded-lg">Nepodařilo se načíst data. Zkontrolujte prosím odkaz na soubor, připojení k internetu, nebo zda nejste na firemní VPN, která by mohla blokovat přístup.</p>';
+                console.error('Chyba při načítání dat z Google Tabulky:', error);
+                tasksGrid.innerHTML = '<p class="text-center col-span-full text-red-600 font-bold p-4 bg-red-100 rounded-lg">Nepodařilo se načíst data. Zkontrolujte prosím, že je odkaz správný a tabulka je publikovaná na webu.</p>';
                 return [];
             }
         }
         
-        // Celá logika stránky se spouští až po načtení DOM a dat
         document.addEventListener('DOMContentLoaded', async () => {
-            const serviceTasksData = await loadDataFromExcel(excelFileLink);
+            const serviceTasksData = await loadDataFromSheet(googleSheetLink);
 
-            if (!serviceTasksData || serviceTasksData.length === 0) {
-                return; // Pokud se data nenačetla, dále nepokračujeme
-            }
+            if (!serviceTasksData || serviceTasksData.length === 0) return;
 
             const tasksGrid = document.getElementById('tasks-grid');
             const filterButtonsContainer = document.getElementById('filter-buttons');
             const searchInput = document.getElementById('search');
 
-            const categories = [...new Set(serviceTasksData.map(task => task.category))];
+            const categories = [...new Set(serviceTasksData.map(task => task.category))].filter(Boolean); // Odstraní prázdné kategorie
             let activeFilter = 'Vše';
 
             function renderCards() {
@@ -145,7 +96,7 @@
                 const searchTerm = searchInput.value.toLowerCase();
 
                 const filteredData = serviceTasksData
-                    .filter(task => (activeFilter === 'Vše' || task.category === activeFilter) && 
+                    .filter(task => task.sku && (activeFilter === 'Vše' || task.category === activeFilter) && 
                                    (String(task.internal || '').toLowerCase().includes(searchTerm) || 
                                     String(task.external || '').toLowerCase().includes(searchTerm) ||
                                     String(task.sku || '').toLowerCase().includes(searchTerm) ||
@@ -156,7 +107,7 @@
                 if (filteredData.length === 0) {
                     tasksGrid.innerHTML = '<p class="text-center col-span-full text-slate-500">Žádné výsledky pro zadané kritérium.</p>';
                 } else {
-                    filteredData.forEach((task, index) => {
+                    filteredData.forEach(task => {
                         const card = document.createElement('div');
                         card.className = 'task-card bg-white p-5 rounded-lg shadow-md border border-slate-200 flex flex-col';
                         card.dataset.category = task.category;
@@ -231,7 +182,7 @@
                                     <h4 class="font-semibold text-slate-800 text-sm mb-1">Interní popis:</h4>
                                     <p class="text-sm text-slate-600 mb-3">${task.internal || ''}</p>
                                 </div>
-                                ${task.external ? `
+                                ${task.external && String(task.external).trim() !== '' ? `
                                 <div class="mt-auto pt-3 border-t border-slate-200">
                                     <h4 class="font-semibold text-slate-800 text-sm mb-1">Co jsem opravil:</h4>
                                     <p class="text-sm text-slate-900 font-medium">${task.external}</p>
@@ -338,7 +289,6 @@
 
             searchInput.addEventListener('input', renderCards);
 
-            // Prvotní spuštění po načtení dat
             renderCards();
             setupFilters();
         });
