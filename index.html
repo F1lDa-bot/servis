@@ -45,10 +45,9 @@
     </div>
 
     <script>
-        // Odkaz na publikovanou Google Tabulku ve formátu CSV
         const googleSheetLink = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtZPkRi7-Cdwp9yZti3YARm_m0FqbZXhuCBRfKudWBBq_YNRKOpwRRNOK-0Je1kdeVbBf9gpxVHh8J/pub?gid=2068787422&single=true&output=csv';
 
-        // Funkce pro načtení a zpracování CSV dat z Google Tabulky
+        // Vylepšená a opravená funkce pro načtení CSV dat
         async function loadDataFromSheet(url) {
             const tasksGrid = document.getElementById('tasks-grid');
             tasksGrid.innerHTML = '<div class="loader col-span-full"></div><p class="text-center col-span-full text-slate-600 -mt-8">Načítám data z Google Tabulky...</p>';
@@ -57,18 +56,27 @@
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`Chyba sítě: ${response.statusText}`);
                 const csvText = await response.text();
-                
-                // Převod CSV textu na pole objektů
+
                 const lines = csvText.trim().split(/\r\n|\n/);
-                const headers = lines[0].split(',');
+                const headers = lines[0].split(',').map(h => h.trim());
+                
                 const jsonData = lines.slice(1).map(line => {
-                    const values = line.split(',');
-                    return headers.reduce((obj, header, index) => {
-                        // Odstranění přebytečných uvozovek a mezer
-                        const value = values[index] ? values[index].trim().replace(/^"|"$/g, '') : '';
-                        obj[header.trim().replace(/^"|"$/g, '')] = value;
-                        return obj;
-                    }, {});
+                    // Chytřejší regulární výraz, který správně zpracuje čárky uvnitř uvozovek
+                    const values = line.match(/(".*?"|[^",\r\n]+)(?=\s*,|\s*$)/g) || [];
+                    
+                    const obj = {};
+                    for (let i = 0; i < headers.length; i++) {
+                        if (headers[i]) {
+                            let value = (values[i] || '').trim();
+                            // Odstraní uvozovky ze začátku a konce, pokud tam jsou
+                            if (value.startsWith('"') && value.endsWith('"')) {
+                                value = value.slice(1, -1);
+                            }
+                            // Nahradí dvojité uvozovky (excelovský escape) za jednoduché
+                            obj[headers[i]] = value.replace(/""/g, '"');
+                        }
+                    }
+                    return obj;
                 });
                 return jsonData;
 
@@ -88,7 +96,7 @@
             const filterButtonsContainer = document.getElementById('filter-buttons');
             const searchInput = document.getElementById('search');
 
-            const categories = [...new Set(serviceTasksData.map(task => task.category))].filter(Boolean); // Odstraní prázdné kategorie
+            const categories = [...new Set(serviceTasksData.map(task => task.category))].filter(Boolean);
             let activeFilter = 'Vše';
 
             function renderCards() {
@@ -137,7 +145,7 @@
                             cardContent = `
                                 <div class="flex justify-between items-center mb-3">
                                     <span class="inline-block ${categoryBgClass} ${categoryTextClass} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
-                                    ${task.sku !== 'PLACEHOLDER' && task.category !== 'Interní popisek výkupů' ? 
+                                    ${task.sku && task.sku !== 'PLACEHOLDER' && task.category !== 'Interní popisek výkupů' ? 
                                     `<div class="relative">
                                         <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
                                         <div class="copy-feedback">Zkopírováno!</div>
