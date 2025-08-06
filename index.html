@@ -9,13 +9,30 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .task-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        .task-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
-        .copy-feedback { position: absolute; top: -28px; right: 0; background-color: #22c55e; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
-        .description-copy-feedback { position: absolute; bottom: -28px; left: 0; background-color: #22c55e; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6; border-radius: 50%; width: 48px; height: 48px; animation: spin 1s linear infinite; margin: 40px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .task-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .task-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .copy-feedback {
+            position: absolute;
+            top: -28px;
+            right: 0;
+            background-color: #22c55e; /* green-500 */
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -34,94 +51,87 @@
                 </div>
                 <div class="md:col-span-2">
                     <h3 class="text-sm font-medium text-slate-700 mb-2">Filtrovat podle kategorie:</h3>
-                    <div id="filter-buttons" class="flex flex-wrap gap-2"></div>
+                    <div id="filter-buttons" class="flex flex-wrap gap-2">
+                    </div>
                 </div>
             </div>
         </div>
 
         <main>
-            <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+            <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            </div>
         </main>
     </div>
 
     <script>
-        const googleSheetLink = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtZPkRi7-Cdwp9yZti3YARm_m0FqbZXhuCBRfKudWBBq_YNRKOpwRRNOK-0Je1kdeVbBf9gpxVHh8J/pub?gid=2068787422&single=true&output=csv';
-
-        async function loadDataFromSheet(url) {
-            const tasksGrid = document.getElementById('tasks-grid');
-            tasksGrid.innerHTML = '<div class="loader col-span-full"></div><p class="text-center col-span-full text-slate-600 -mt-8">Načítám data z Google Tabulky...</p>';
-
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Chyba sítě: ${response.statusText}`);
-                const csvText = await response.text();
-
-                let lines = csvText.trim().split(/\r\n|\n/);
-                let headerIndex = lines.findIndex(line => line.trim().startsWith('sku'));
-                if (headerIndex === -1) throw new Error("V souboru nebyl nalezen řádek se záhlavím ('sku').");
-
-                const headers = lines[headerIndex].split(',').map(h => h.trim());
-                const dataLines = lines.slice(headerIndex + 1);
-                
-                const jsonData = dataLines.map(line => {
-                    if (line.trim() === '') return null;
-                    const values = line.match(/(".*?"|[^",\r\n]+)(?=\s*,|\s*$)/g) || [];
-                    
-                    const obj = {};
-                    headers.forEach((header, i) => {
-                        if (header) {
-                            let value = (values[i] || '').trim().replace(/^"|"$/g, '').replace(/""/g, '"');
-                            obj[header] = value;
-                        }
-                    });
-                    return obj;
-                }).filter(Boolean);
-                return jsonData;
-
-            } catch (error) {
-                console.error('Chyba při načítání dat z Google Tabulky:', error);
-                tasksGrid.innerHTML = `<p class="text-center col-span-full text-red-600 font-bold p-4 bg-red-100 rounded-lg">Nepodařilo se načíst data. Chyba: ${error.message}</p>`;
-                return [];
-            }
-        }
+        // Data jsou nyní vložena přímo zde na základě nového PDF.
+        const serviceTasksData = [
+          { sku: 'S0033', category: 'Playstation externí opravy', internal: 'LB1 - Výměna HDD/SSD u PlayStation konzolí', bonus: '100', ukony: '1' },
+          { sku: 'S0034', category: 'Playstation externí opravy', internal: 'LB2 - Výměna jednoho dílu u PS4', bonus: '170', ukony: '1.5' },
+          { sku: 'S0035', category: 'Playstation externí opravy', internal: 'LB3 - Výměna více dílů u PS4 nebo výměnu jednoho dílu u PS5', bonus: '250', ukony: '1.75' },
+          { sku: 'S0142', category: 'Playstation externí opravy', internal: 'LB7 - Rozsáhlé opravy - pájení konektorů a čipů (neprovádí se na prodejnách)', bonus: '300', ukony: '2' },
+          { sku: 'S0042', category: 'Xbox externí opravy', internal: 'LB1 - Výměna HDD/SSD u Xbox konzolí', bonus: '100', ukony: '1' },
+          { sku: 'S0043', category: 'Xbox externí opravy', internal: 'LB2 - Výměna jednoho dílu u Xbox ONE/ Series S', bonus: '170', ukony: '1.5' },
+          { sku: 'S0044', category: 'Xbox externí opravy', internal: 'LB3 - Výměna více dílů u Xbox ONE/Series S nebo jednoho díli Xbox Series X', bonus: '250', ukony: '1.75' },
+          { sku: 'S0143', category: 'Xbox externí opravy', internal: 'LB7 - Rozsáhlé opravy - pájení konektorů a čipů (neprovádí se na prodejnách)', bonus: '300', ukony: '2' },
+          { sku: 'S0036', category: 'Nintendo externí opravy', internal: 'LB4-Oprava konzolí Nintendo', bonus: '150', ukony: '1.5' },
+          { sku: 'S0144', category: 'Nintendo externí opravy', internal: 'LB7 - Rozsáhlé opravy - pájení konektorů a čipů (neprovádí se na prodejnách)', bonus: '250', ukony: '2' },
+          { sku: 'S0037', category: 'Ovladače externí opravy', internal: 'LB1 - Výměna potenciometru, 1 jakýkoliv díl', bonus: '130', ukony: '1' },
+          { sku: 'S0038', category: 'Ovladače externí opravy', internal: 'LB2 - Pájení desky/konektoru, více jak 2 díly, opravy Elite', bonus: '170', ukony: '1.25' },
+          { sku: 'S0050', category: 'Gaming interní opravy', internal: 'LB1-Opravy všech ovladačů', bonus: '110', ukony: '1' },
+          { sku: 'S0051', category: 'Gaming interní opravy', internal: 'LB2 - Výměna jednoho dílu u konzolí, čištění + přepastování', bonus: '120', ukony: '1.25' },
+          { sku: 'S0052', category: 'Gaming interní opravy', internal: 'LB3 - Výměna více dílů u konzolí, nebo 1 u PS5, Xbox Series', bonus: '150', ukony: '1.5' },
+          { sku: 'S0053', category: 'Gaming interní opravy', internal: 'LB7 - Rozsáhlé opravy - pájení konektorů a čipů (neprovádí se na prodejnách)', bonus: '220', ukony: '1.75' },
+          { sku: 'S0063', category: 'Apple externí opravy', internal: 'L1 - Jeden díl na iPhone 6-11 (včetně pro modelů)', bonus: '130', ukony: '1.25' },
+          { sku: 'S0064', category: 'Apple externí opravy', internal: 'L2 - Jeden díl na iPhone 12 a výš nebo 2 díly na jakémkoliv modelu', bonus: '220', ukony: '1.5' },
+          { sku: 'S0065', category: 'Apple externí opravy', internal: 'L3-Housing na jakýkoliv model, nebo víc jak 2 díly 12 a novější, iPad', bonus: '275', ukony: '2' },
+          { sku: 'S0016', category: 'Apple interní opravy', internal: 'L1V - Jeden díl u iPhonu 6-11 (včetně pro modelů)', bonus: '100', ukony: '1' },
+          { sku: 'S0017', category: 'Apple interní opravy', internal: 'L2V - Jeden díl u iPhonu 12 a výš nebo 2 díly do 11 na jakémkoliv modelu', bonus: '175', ukony: '1.25' },
+          { sku: 'S0015', category: 'Apple interní opravy', internal: 'L3V - Housing na jakýkoliv model, nebo víc jak 2 díly 12 a novější, iPad', bonus: '225', ukony: '1.5' },
+          { sku: 'S0150', category: 'PC/Tigo externí opravy', internal: 'LB1 - Software, přesazení komponent', bonus: '100', ukony: '1' },
+          { sku: 'S0151', category: 'PC/Tigo externí opravy', internal: 'LB2-RAM, GPU', bonus: '150', ukony: '1.5' },
+          { sku: 'S0152', category: 'PC/Tigo externí opravy', internal: 'LB3-CPU, zdroj, ostatní', bonus: '200', ukony: '2' },
+          { sku: 'S8800', category: 'Externí služby', internal: 'Diagnostika a čištění ovladače', bonus: '15% bez DPH', ukony: '1' },
+          { sku: 'S8805', category: 'Externí služby', internal: 'Diagnostika a čištění konzole', bonus: '15% bez DPH', ukony: '1' },
+          { sku: 'S8804', category: 'Externí služby', internal: 'Update/obnovení softwaru konzole', bonus: '15% bez DPH', ukony: '1' },
+          { sku: 'S8777', category: 'Externí služby', internal: 'Čištění a přepastování konzolí PS4, PS5, Xbox One,X,S', bonus: '15% bez DPH', ukony: '1' },
+          { sku: 'S0019', category: 'Externí služby', internal: 'Reinstalace iOS', bonus: '15% bez DPH', ukony: '1' },
+          { sku: 'S0003', category: 'Externí služby', internal: 'Reinstalace MacOS', bonus: '15% bez DPH', ukony: '1' },
+          { sku: 'S0001', category: 'Externí služby', internal: 'Diagnostika zařízení a čištění iOS/Android', bonus: '15% bez DPH', ukony: '1' },
+          { sku: 'S0102', category: 'Externí služby', internal: 'Diagnostikazařízení a čištění Airpods/EarPods', bonus: '15% bez DPH', ukony: '1' },
+          { sku: 'S0021', category: 'Externí služby', internal: 'Nezáruční zamítnutí reklamace iOS', bonus: '15% bez DPH', ukony: '1' },
+          { sku: 'S0160', category: 'Interní služby', internal: 'Diagnostika a čištění DEMO a vratek', bonus: '30', ukony: '0.25' },
+          { sku: 'S0018', category: 'Interní služby', internal: 'Kontrola výkupu diagnostika a čištění následné odeslání např na jinou prodejnu', bonus: '30', ukony: '0.25' },
+          { sku: 'S0031', category: 'Interní služby', internal: 'Zamítnutí záruční reklamace', bonus: '20', ukony: '0.25' },
+          { sku: 'S0158', category: 'Interní služby', internal: 'Zpracování výkupu na prodejně technikem iPhone Androin, Mac', bonus: '40', ukony: '0.25' },
+          { sku: 'S0159', category: 'Interní služby', internal: 'Zpracování výkupu technikem na prodejně Konzole, Watch', bonus: '100', ukony: '0.5' },
+          { sku: '15642', category: 'Interní služby', internal: 'Doplnění ceny u opravy', bonus: '0', ukony: '0' },
+          { sku: '196266', category: 'Interní služby', internal: 'Zprostředkování služby konzultantem', bonus: '20', ukony: '0' }
+        ];
         
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Seznam SK kódů, u kterých se nemá zobrazovat "Co jsem opravil:"
-            const skusToExcludeExternal = [
-                'S8805', 'S8804', 'S8800', 'S8177', 'S0159', 'S0019', 'S0003', 'S0001', 'S0102', 
-                'S0160', 'S0158', 'S0018', 'S0031', '15642', 'S0021', '196266', 'S0065'
-            ];
-            
-            const serviceTasksData = await loadDataFromSheet(googleSheetLink);
-
-            if (!serviceTasksData || serviceTasksData.length === 0) return;
-
+        document.addEventListener('DOMContentLoaded', () => {
             const tasksGrid = document.getElementById('tasks-grid');
             const filterButtonsContainer = document.getElementById('filter-buttons');
             const searchInput = document.getElementById('search');
 
-            const categories = [...new Set(serviceTasksData.map(task => task.category))].filter(Boolean);
+            const categories = [...new Set(serviceTasksData.map(task => task.category))];
             let activeFilter = 'Vše';
 
             function renderCards() {
                 tasksGrid.innerHTML = '';
                 const searchTerm = searchInput.value.toLowerCase();
 
-                const filteredData = serviceTasksData.filter(task => 
-                    task.sku && (activeFilter === 'Vše' || task.category === activeFilter) && (
-                        String(task.internal || '').toLowerCase().includes(searchTerm) || 
-                        String(task.external || '').toLowerCase().includes(searchTerm) ||
-                        String(task.sku || '').toLowerCase().includes(searchTerm) ||
-                        String(task.bonus || '').includes(searchTerm) ||
-                        String(task.ukony || '').includes(searchTerm) ||
-                        String(task.devices || '').toLowerCase().includes(searchTerm)
-                    )
-                );
+                const filteredData = serviceTasksData
+                    .filter(task => (activeFilter === 'Vše' || task.category === activeFilter) && 
+                                   (String(task.internal || '').toLowerCase().includes(searchTerm) || 
+                                    String(task.sku || '').toLowerCase().includes(searchTerm) ||
+                                    String(task.bonus || '').toLowerCase().includes(searchTerm) ||
+                                    String(task.ukony || '').toLowerCase().includes(searchTerm)));
                 
                 if (filteredData.length === 0) {
                     tasksGrid.innerHTML = '<p class="text-center col-span-full text-slate-500">Žádné výsledky pro zadané kritérium.</p>';
                 } else {
-                    filteredData.forEach(task => {
+                    filteredData.forEach((task) => {
                         const card = document.createElement('div');
                         card.className = 'task-card bg-white p-5 rounded-lg shadow-md border border-slate-200 flex flex-col';
                         card.dataset.category = task.category;
@@ -129,83 +139,34 @@
                         let categoryBgClass = 'bg-slate-100';
                         let categoryTextClass = 'text-slate-800';
 
-                        switch (task.category) {
-                            case 'Playstation': categoryBgClass = 'bg-blue-100'; categoryTextClass = 'text-blue-800'; break;
-                            case 'Xbox': categoryBgClass = 'bg-green-100'; categoryTextClass = 'text-green-800'; break;
-                            case 'Nintendo': categoryBgClass = 'bg-red-100'; categoryTextClass = 'text-red-800'; break;
-                            case 'Diagnostiky a čištění': categoryBgClass = 'bg-purple-100'; categoryTextClass = 'text-purple-800'; break;
-                            case 'Výkupy': categoryBgClass = 'bg-orange-100'; categoryTextClass = 'text-orange-800'; break;
-                            case 'iPhony/Mac': categoryBgClass = 'bg-yellow-100'; categoryTextClass = 'text-yellow-800'; break;
-                            case 'Ovladače': categoryBgClass = 'bg-pink-100'; categoryTextClass = 'text-pink-800'; break;
-                            case 'Zalistování výkupů': categoryBgClass = 'bg-teal-100'; categoryTextClass = 'text-teal-800'; break;
-                            case 'Interní popisek výkupů': categoryBgClass = 'bg-emerald-100'; categoryTextClass = 'text-emerald-800'; break;
-                        }
+                        // Simplified color coding based on keywords
+                        if (task.category.toLowerCase().includes('playstation')) { categoryBgClass = 'bg-blue-100'; categoryTextClass = 'text-blue-800'; }
+                        else if (task.category.toLowerCase().includes('xbox')) { categoryBgClass = 'bg-green-100'; categoryTextClass = 'text-green-800'; }
+                        else if (task.category.toLowerCase().includes('nintendo')) { categoryBgClass = 'bg-red-100'; categoryTextClass = 'text-red-800'; }
+                        else if (task.category.toLowerCase().includes('apple')) { categoryBgClass = 'bg-yellow-100'; categoryTextClass = 'text-yellow-800'; }
+                        else if (task.category.toLowerCase().includes('pc') || task.category.toLowerCase().includes('tigo')) { categoryBgClass = 'bg-indigo-100'; categoryTextClass = 'text-indigo-800'; }
+                        else if (task.category.toLowerCase().includes('ovladače')) { categoryBgClass = 'bg-pink-100'; categoryTextClass = 'text-pink-800'; }
+                        else if (task.category.toLowerCase().includes('gaming')) { categoryBgClass = 'bg-purple-100'; categoryTextClass = 'text-purple-800'; }
+                        else if (task.category.toLowerCase().includes('služby')) { categoryBgClass = 'bg-teal-100'; categoryTextClass = 'text-teal-800'; }
 
-                        let cardContent = '';
-                        const showExternal = task.external && String(task.external).trim() !== '' && !skusToExcludeExternal.includes(task.sku);
-
-                        if (task.category === 'Ovladače' || task.category === 'Zalistování výkupů' || task.category === 'Interní popisek výkupů') {
-                             let title = 'Informace:';
-                             if (task.category === 'Ovladače') title = 'Název ovladače:';
-                             if (task.category === 'Interní popisek výkupů') title = `${task.sku}:`;
-
-                            cardContent = `
-                                <div class="flex justify-between items-center mb-3">
-                                    <span class="inline-block ${categoryBgClass} ${categoryTextClass} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
-                                    ${task.sku && task.sku !== 'PLACEHOLDER' && task.category !== 'Interní popisek výkupů' ? 
-                                    `<div class="relative">
-                                        <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
-                                        <div class="copy-feedback">Zkopírováno!</div>
-                                    </div>` : ''
-                                    }
-                                </div>
-                                <div class="relative">
-                                    <h4 class="font-semibold text-slate-800 text-sm mb-1">${title}</h4>
-                                    <p class="description-item text-sm text-slate-600 whitespace-pre-wrap cursor-pointer hover:bg-slate-100 p-1 rounded">${task.internal || ''}</p>
-                                    <div class="description-copy-feedback">Popis zkopírován!</div>
-                                </div>
-                            `;
-                        } else {
-                            let devicesHtml = '';
-                            if (task.devices && String(task.devices).trim() !== '') {
-                                const deviceList = String(task.devices).split(',').map(d => d.trim());
-                                const visibleDevices = deviceList.slice(0, 4);
-                                const hiddenDevices = deviceList.slice(4);
-
-                                devicesHtml = `
-                                    <div class="mt-3 pt-3 border-t border-slate-200">
-                                        <h4 class="font-semibold text-slate-800 text-sm mb-2">Zařízení:</h4>
-                                        <div class="flex flex-wrap gap-2">
-                                            ${visibleDevices.map(d => `<span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-md">${d}</span>`).join('')}
-                                            ${hiddenDevices.length > 0 ? `<div class="hidden-devices hidden w-full flex-wrap gap-2 mt-2">${hiddenDevices.map(d => `<span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-md">${d}</span>`).join('')}</div>` : ''}
-                                        </div>
-                                        ${hiddenDevices.length > 0 ? `<button class="show-more-btn text-sm text-sky-600 hover:text-sky-800 mt-2 font-medium">další...</button>` : ''}
-                                    </div>
-                                `;
-                            }
-                            cardContent = `
-                                <div class="flex justify-between items-start mb-3 gap-2">
-                                    <span class="inline-block ${categoryBgClass} ${categoryTextClass} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
-                                    <div class="flex items-center gap-2 flex-wrap justify-end relative">
-                                        <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2 py-1 rounded">Bonus: ${task.bonus}</span>
-                                        <span class="text-xs font-mono bg-cyan-100 text-cyan-800 px-2 py-1 rounded">Úkony: ${task.ukony}</span>
-                                        <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
-                                        <div class="copy-feedback">Zkopírováno!</div>
+                        const cardContent = `
+                            <div class="flex justify-between items-start mb-3 gap-2">
+                                <span class="inline-block ${categoryBgClass} ${categoryTextClass} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
+                                <div class="flex items-center gap-2 flex-wrap justify-end relative">
+                                    <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2 py-1 rounded">Bonus: ${task.bonus}</span>
+                                    <span class="text-xs font-mono bg-cyan-100 text-cyan-800 px-2 py-1 rounded">Úkony: ${task.ukony}</span>
+                                    <div class="relative">
+                                      <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
+                                      <div class="copy-feedback">Zkopírováno!</div>
                                     </div>
                                 </div>
-                                <div>
-                                    <h4 class="font-semibold text-slate-800 text-sm mb-1">Interní popis:</h4>
-                                    <p class="text-sm text-slate-600 mb-3">${task.internal || ''}</p>
-                                </div>
-                                ${showExternal ? `
-                                <div class="mt-auto pt-3 border-t border-slate-200">
-                                    <h4 class="font-semibold text-slate-800 text-sm mb-1">Co jsem opravil:</h4>
-                                    <p class="text-sm text-slate-900 font-medium">${task.external}</p>
-                                </div>
-                                ` : '<div class="mt-auto"></div>'}
-                                ${devicesHtml}
-                            `;
-                        }
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-slate-800 text-sm mb-1">Popis úkonu:</h4>
+                                <p class="text-sm text-slate-600 mb-3">${task.internal || ''}</p>
+                            </div>
+                            <div class="mt-auto"></div>
+                        `;
                         
                         card.innerHTML = cardContent;
                         tasksGrid.appendChild(card);
@@ -214,18 +175,15 @@
             }
 
             function getActiveButtonClasses(category) {
-                switch (category) {
-                    case 'Playstation': return ['bg-blue-600', 'text-white', 'font-semibold'];
-                    case 'Xbox': return ['bg-green-600', 'text-white', 'font-semibold'];
-                    case 'Nintendo': return ['bg-red-600', 'text-white', 'font-semibold'];
-                    case 'Diagnostiky a čištění': return ['bg-purple-600', 'text-white', 'font-semibold'];
-                    case 'Výkupy': return ['bg-orange-600', 'text-white', 'font-semibold'];
-                    case 'iPhony/Mac': return ['bg-yellow-500', 'text-slate-900', 'font-semibold'];
-                    case 'Ovladače': return ['bg-pink-600', 'text-white', 'font-semibold'];
-                    case 'Zalistování výkupů': return ['bg-teal-600', 'text-white', 'font-semibold'];
-                    case 'Interní popisek výkupů': return ['bg-emerald-700', 'text-white', 'font-semibold'];
-                    default: return ['bg-sky-600', 'text-white', 'font-semibold'];
-                }
+                if (category.toLowerCase().includes('playstation')) return ['bg-blue-600', 'text-white', 'font-semibold'];
+                if (category.toLowerCase().includes('xbox')) return ['bg-green-600', 'text-white', 'font-semibold'];
+                if (category.toLowerCase().includes('nintendo')) return ['bg-red-600', 'text-white', 'font-semibold'];
+                if (category.toLowerCase().includes('apple')) return ['bg-yellow-500', 'text-slate-900', 'font-semibold'];
+                if (category.toLowerCase().includes('pc') || category.toLowerCase().includes('tigo')) return ['bg-indigo-600', 'text-white', 'font-semibold'];
+                if (category.toLowerCase().includes('ovladače')) return ['bg-pink-600', 'text-white', 'font-semibold'];
+                if (category.toLowerCase().includes('gaming')) return ['bg-purple-600', 'text-white', 'font-semibold'];
+                if (category.toLowerCase().includes('služby')) return ['bg-teal-600', 'text-white', 'font-semibold'];
+                return ['bg-sky-600', 'text-white', 'font-semibold'];
             }
 
             function setupFilters() {
@@ -243,11 +201,13 @@
 
                 filterButtonsContainer.addEventListener('click', (e) => {
                     const targetButton = e.target.closest('.filter-btn');
-                    if (!targetButton || targetButton === activeButton) return;
+                    if (!targetButton) return;
 
                     const oldActiveClasses = getActiveButtonClasses(activeFilter);
-                    if(activeButton) activeButton.classList.remove(...oldActiveClasses);
-                    if(activeButton) activeButton.classList.add(...inactiveClasses);
+                    if (activeButton) {
+                      activeButton.classList.remove(...oldActiveClasses);
+                      activeButton.classList.add(...inactiveClasses);
+                    }
 
                     activeFilter = targetButton.dataset.category;
                     activeButton = targetButton;
@@ -260,40 +220,24 @@
             }
 
             tasksGrid.addEventListener('click', (e) => {
-                if (e.target.classList.contains('show-more-btn')) {
-                    const button = e.target;
-                    const hiddenDevices = button.closest('.task-card').querySelector('.hidden-devices');
-                    if (hiddenDevices) {
-                        hiddenDevices.classList.toggle('hidden');
-                        button.textContent = hiddenDevices.classList.contains('hidden') ? 'další...' : 'skrýt';
-                    }
-                }
-                
                 const skuItem = e.target.closest('.sku-item');
                 if (skuItem) {
-                    navigator.clipboard.writeText(skuItem.dataset.sku).then(() => {
+                    const skuToCopy = skuItem.dataset.sku;
+                    navigator.clipboard.writeText(skuToCopy).then(() => {
                         const feedback = skuItem.nextElementSibling;
                         if(feedback) {
                             feedback.style.opacity = '1';
-                            setTimeout(() => { feedback.style.opacity = '0'; }, 1500);
+                            setTimeout(() => {
+                               feedback.style.opacity = '0';
+                            }, 1500);
                         }
-                    });
-                }
-
-                const descriptionItem = e.target.closest('.description-item');
-                if (descriptionItem) {
-                    navigator.clipboard.writeText(descriptionItem.innerText).then(() => {
-                        const feedback = descriptionItem.nextElementSibling;
-                        if(feedback) {
-                            feedback.style.opacity = '1';
-                            setTimeout(() => { feedback.style.opacity = '0'; }, 1500);
-                        }
+                    }).catch(err => {
+                        console.error('Nepodařilo se zkopírovat SK kód:', err);
                     });
                 }
             });
 
             searchInput.addEventListener('input', renderCards);
-
             renderCards();
             setupFilters();
         });
