@@ -122,11 +122,12 @@
                         if (match[3] === '') break;
                     }
 
+                    // Původní, správné pořadí
                     const obj = {
                         sku:      values[0] || '',
                         category: values[1] || '',
-                        internal: values[2] || '',
-                        external: values[3] || '',
+                        internal: values[2] || '', // Načítá ze 3. sloupce (C)
+                        external: values[3] || '', // Načítá ze 4. sloupce (D)
                         bonus:    values[4] || '0',
                         ukony:    values[5] || '0',
                         devices:  values[6] || '',
