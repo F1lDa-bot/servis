@@ -47,7 +47,6 @@
     <script>
         const googleSheetLink = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtZPkRi7-Cdwp9yZti3YARm_m0FqbZXhuCBRfKudWBBq_YNRKOpwRRNOK-0Je1kdeVbBf9gpxVHh8J/pub?gid=2068787422&single=true&output=csv';
 
-        // Vylepšená a opravená funkce pro načtení CSV dat
         async function loadDataFromSheet(url) {
             const tasksGrid = document.getElementById('tasks-grid');
             tasksGrid.innerHTML = '<div class="loader col-span-full"></div><p class="text-center col-span-full text-slate-600 -mt-8">Načítám data z Google Tabulky...</p>';
@@ -57,32 +56,44 @@
                 if (!response.ok) throw new Error(`Chyba sítě: ${response.statusText}`);
                 const csvText = await response.text();
 
-                const lines = csvText.trim().split(/\r\n|\n/);
-                const headers = lines[0].split(',').map(h => h.trim());
+                // Odstraní prázdné řádky a najde první řádek se záhlavím
+                let lines = csvText.trim().split(/\r\n|\n/);
+                let headerIndex = -1;
+                for(let i = 0; i < lines.length; i++) {
+                    if (lines[i].trim() !== '') {
+                        headerIndex = i;
+                        break;
+                    }
+                }
+
+                if (headerIndex === -1) {
+                    throw new Error("V souboru nebyla nalezena žádná data.");
+                }
+
+                const headers = lines[headerIndex].split(',').map(h => h.trim());
+                const dataLines = lines.slice(headerIndex + 1);
                 
-                const jsonData = lines.slice(1).map(line => {
-                    // Chytřejší regulární výraz, který správně zpracuje čárky uvnitř uvozovek
+                const jsonData = dataLines.map(line => {
+                    if (line.trim() === '') return null; // Přeskočí prázdné řádky v datech
                     const values = line.match(/(".*?"|[^",\r\n]+)(?=\s*,|\s*$)/g) || [];
                     
                     const obj = {};
                     for (let i = 0; i < headers.length; i++) {
                         if (headers[i]) {
                             let value = (values[i] || '').trim();
-                            // Odstraní uvozovky ze začátku a konce, pokud tam jsou
                             if (value.startsWith('"') && value.endsWith('"')) {
                                 value = value.slice(1, -1);
                             }
-                            // Nahradí dvojité uvozovky (excelovský escape) za jednoduché
                             obj[headers[i]] = value.replace(/""/g, '"');
                         }
                     }
                     return obj;
-                });
+                }).filter(Boolean); // Odstraní null hodnoty z prázdných řádků
                 return jsonData;
 
             } catch (error) {
                 console.error('Chyba při načítání dat z Google Tabulky:', error);
-                tasksGrid.innerHTML = '<p class="text-center col-span-full text-red-600 font-bold p-4 bg-red-100 rounded-lg">Nepodařilo se načíst data. Zkontrolujte prosím, že je odkaz správný a tabulka je publikovaná na webu.</p>';
+                tasksGrid.innerHTML = `<p class="text-center col-span-full text-red-600 font-bold p-4 bg-red-100 rounded-lg">Nepodařilo se načíst data. Chyba: ${error.message}</p>`;
                 return [];
             }
         }
