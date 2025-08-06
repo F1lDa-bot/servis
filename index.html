@@ -8,10 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals (Slate, Stone, Sky) with brand accents (Blue, Green, Red, Purple, Orange, Yellow, Pink, Teal, Dark Green) -->
-    <!-- Application Structure Plan: Původní dashboard rozložení s grafem bylo odstraněno na žádost uživatele. Nová struktura je jednodušší, jednolitá. Všechny ovládací prvky (vyhledávání, filtry kategorií) jsou umístěny nahoře nad seznamem úkonů pro snadný přístup. Seznam úkonů je zobrazen v mřížce pod filtry. Tento design zjednodušuje uživatelské rozhraní a zaměřuje se čistě na rychlé filtrování a vyhledávání dat bez doplňkových vizualizací. -->
-    <!-- Visualization & Content Choices: Graf byl odstraněn. Data jsou prezentována výhradně jako karty v mřížce (HTML/Tailwind). Nově byla přidána vizuální distinkce pomocí barev pro všechny kategorie pro rychlejší vizuální identifikaci. Aktivní filtr nyní barevně koresponduje s kategorií. Přidány údaje "Bonus", "Úkony" a seznam "Zařízení" s rozbalovací funkcí. Přidána funkce kopírování SK kódu a popisů po kliknutí. Karty pro některé kategorie jsou zjednodušené. Cíl: Informování a organizace. Interakce: Filtrování, vyhledávání, rozbalování detailů a kopírování (JS). -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -51,6 +48,19 @@
             transition: opacity 0.3s ease;
             pointer-events: none;
         }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+            margin: 40px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -77,75 +87,45 @@
 
         <main>
             <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            </div>
+                </div>
         </main>
     </div>
 
     <script>
-        const serviceTasksData = [
-            { sku: 'S0033', category: 'Playstation', internal: 'LB1 - jedná se o výměnu HDD/SSD', external: 'Pro zákazníka výměna pevného disku', bonus: 100, ukony: 0.75, devices: 'PS4, PS4 Pro, PS5, PS5 Slim' },
-            { sku: 'S0034', category: 'Playstation', internal: 'LB2 - jedná se o výměnu jednoho dílu u PS4 + výměna dvou potenciometrů u ovladačů', external: 'Pro zákazníka výměna ventilátoru, zdroje, mechaniky u PS4, nebo výměna dvou potenciometrů u jakéhokoliv playstation ovladače', bonus: 170, ukony: 1.5, devices: 'PS4, PS4 Slim, PS4 Pro, ovladače Xbox, ovladače PlayStation' },
-            { sku: 'S0035', category: 'Playstation', internal: 'LB3 - jedná se o výměnu více dílu u PS4 nebo výměnu jednoho dílu u PS5', external: 'Pro zákazníka výměna ventilátoru a zdroje a mechaniky zároveň u PS4, nebo výměna ventilátoru, zdroje, mechaniky u PS5', bonus: 250, ukony: 1.75, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim' },
-            { sku: 'S0045', category: 'Playstation', internal: 'LB5 - jedná se o opravu ovladače', external: 'Pro zákazníka výměna jednoho potenciometru, výměna nabíjecího portu, výměna kloboučků, výměna tlačítek, výměna krytu ovladače', bonus: 130, ukony: 1.25, devices: 'ovladače PlayStation' },
-            { sku: 'S0042', category: 'Xbox', internal: 'LB1- jedná se o výměnu HDD/SSD u Xbox konzolí', external: 'Pro zákazníka výměna pevného disku', bonus: 100, ukony: 1, devices: 'Xbox One S, Xbox One X, Xbox Series S' },
-            { sku: 'S0043', category: 'Xbox', internal: 'LB2- jedná se o výměnu jednoho dílu u Xbox ONE/ Series S', external: 'Pro zákazníka výměna ventilátoru, zdroje, mechaniky u Xboxu ONE/ Series S', bonus: 170, ukony: 1.5, devices: 'Xbox One S, Xbox One X, Xbox Series S' },
-            { sku: 'S0044', category: 'Xbox', internal: 'LB3 - jedná se o výměnu více dílů u Xbox ONE/Series S nebo jednoho dílu Xbox Series X', external: 'Pro zákazníka výměna ventilátoru a zdroje a mechaniky zároveň u Xboxu ONE/ Series S, nebo výměna ventilátoru, zdroje, mechaniky u Xbox Series X', bonus: 250, ukony: 2, devices: 'Xbox One S, Xbox One X, Xbox Series S' },
-            { sku: 'S0037', category: 'Xbox', internal: 'LB5 - jedná se o opravu ovladačů Xbox', external: 'Pro zákazníka výměna jednoho potenciometru, výměna nabíjecího portu, výměna kloboučků, výměna tlačítek, výměna krytu ovladače', bonus: 130, ukony: 1.25, devices: 'ovladače Xbox' },
-            { sku: 'S0036', category: 'Nintendo', internal: 'LB4-jedná se o opravu konzolí nintendo', external: 'Pro zákazníka výměna baterie, větráku, čtečky herních karet, čtečky paměťových karet, kolejnic', bonus: 150, ukony: 1.5, devices: 'Nintendo, Nintendo Lite, Nintendo OLED' },
-            { sku: 'S0038', category: 'Nintendo', internal: 'LB6-jedná se o opravu Joy-Con/ovladačů nintendo', external: 'Pro zákazníka výměna jednoho potenciometru, výměna baterie, výměna tlačítek, výměna krytu ovladače, výměna kolejnic', bonus: 100, ukony: 1, devices: 'Joy-Con' },
-            { sku: 'S8805', category: 'Diagnostiky a čištění', internal: 'Diagnostika ovladače', external: '', bonus: 92, ukony: 1, devices: '' },
-            { sku: 'S8805', category: 'Diagnostiky a čištění', internal: 'Diagnostika konzole', external: '', bonus: 99, ukony: 1, devices: '' },
-            { sku: 'S8804', category: 'Diagnostiky a čištění', internal: 'Update/reinstalace operačního systému konzole', external: '', bonus: 99, ukony: 1, devices: '' },
-            { sku: 'S8177', category: 'Diagnostiky a čištění', internal: 'Čištění a přepastování konzolí PS4,PS5,Xbox One,X,S', external: '', bonus: 214, ukony: 1, devices: '' },
-            { sku: 'S0159', category: 'Diagnostiky a čištění', internal: 'Zpracování výkupu technikem na prodejně Konzole, Apple Watch', external: '', bonus: 100, ukony: 0.38, devices: 'Apple Watch, PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S' },
-            { sku: 'S0050', category: 'Výkupy', internal: 'LB1 - jedná se o výměnu HDD/SSD, opravy Joy-Con/ovladačů nintendo', external: 'výměna pevného disku, výměna jednoho potenciometru, výměna baterie, výměna tlačítek, výměna krytu ovladače, výměna kolejnic', bonus: 80, ukony: 0.75, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S, Joy-Con' },
-            { sku: 'S0051', category: 'Výkupy', internal: 'LB2 - jedná se o opravu ovladačů Xbox,PS, oprava konzolí Nintendo nebo výměna jednoho dílu u Nintendo konzole', external: 'výměna jednoho potenciometru u všech ovladačů nebo výměna jednoho dílu u Nintendo konzole', bonus: 100, ukony: 1.25, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S' },
-            { sku: 'S0052', category: 'Výkupy', internal: 'LB3 - oprava mechaniky PS/Xbox nebo čištění + přepastování', external: 'výměna mechaniky všechny Playstationy nebo všechny Xboxy, čištění a přepastování konzole', bonus: 120, ukony: 1.5, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S' },
-            { sku: 'S0053', category: 'Výkupy', internal: 'LB4 - výměna více dílů u konzolí + výměna dvou potenciometrů u ovladačů', external: 'výměna ventilátoru a zdroje a mechaniky zároveň u všech konzolí nebo výměna dvou potenciometrů u všech ovladačů', bonus: 150, ukony: 1.5, devices: 'PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S, ovladače Xbox, ovladače PlayStation' },
-            { sku: 'S0016', category: 'Výkupy', internal: 'Výměna jednoho dílu u iPhonu 6-11 (včetně pro modelů) u výkupu', external: 'výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 6 až 11', bonus: 100, ukony: 1.25, devices: 'iPhone 6, iPhone 6 Plus, iPhone 7, iPhone 7 Plus, iPhone 8, iPhone 8 Plus, iPhone X, iPhone XS, iPhone XS Max, iPhone XR, iPhone 11, iPhone 11 Pro, iPhone 11 Pro Max' },
-            { sku: 'S0017', category: 'Výkupy', internal: 'Výměna jednoho dílu u iPhonu 12 a výše nebo 2 dílů na jakém koliv modelu u výkupu', external: 'výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 12 a dále, výměna displeje a baterie zároveň', bonus: 150, ukony: 1.5, devices: 'iPhone 12 mini, iPhone 12, iPhone 12 Pro, iPhone 12 Pro Max, iPhone 13 mini, iPhone 13, iPhone 13 Pro, iPhone 13 Pro Max, iPhone 14, iPhone 14 Plus, iPhone 14 Pro, iPhone 14 Pro Max' },
-            { sku: 'S0019', category: 'iPhony/Mac', internal: 'Reinstalace iOS', external: '', bonus: 65, ukony: 1, devices: '' },
-            { sku: 'S0003', category: 'iPhony/Mac', internal: 'Reinstalace MacOS', external: '', bonus: 165, ukony: 1, devices: '' },
-            { sku: 'S0001', category: 'iPhony/Mac', internal: 'Diagnostika zařízení a čištění iOS/Android', external: '', bonus: 74, ukony: 1, devices: '' },
-            { sku: 'S0102', category: 'iPhony/Mac', internal: 'Diagnostika zařízení a čištění Airpods/EarPods', external: '', bonus: 82, ukony: 1, devices: '' },
-            { sku: 'S0160', category: 'iPhony/Mac', internal: 'Diagnostika a čištění DEMO a vratek', external: '', bonus: 40, ukony: 0.38, devices: 'iPhone, Android, MacBook' },
-            { sku: 'S0158', category: 'iPhony/Mac', internal: 'Zpracování výkupu na prodejně technikem iPhone, Android, Mac', external: '', bonus: 60, ukony: 0.38, devices: 'iPhone, Apple Watch, PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S' },
-            { sku: 'S0018', category: 'iPhony/Mac', internal: 'Kontrola výkupu diagnostika a čištění následné odesílání', external: '', bonus: 40, ukony: 0.38, devices: 'iPhone, Apple Watch, PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S' },
-            { sku: 'S0031', category: 'iPhony/Mac', internal: 'Zamítnutí záruční reklamace', external: '', bonus: 40, ukony: 0, devices: '' },
-            { sku: '15642', category: 'iPhony/Mac', internal: 'Pokud díl není naskladněný a potřebuješ si zaúčtovat cenu', external: '', bonus: 55, ukony: 1, devices: 'iPhone, Apple Watch, PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S' },
-            { sku: 'S0021', category: 'iPhony/Mac', internal: 'Zamítnutí reklamace ze strany zákazníka', external: '', bonus: 20, ukony: 1, devices: 'iPhone, Apple Watch, PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S' },
-            { sku: '196266', category: 'iPhony/Mac', internal: 'Zprostředkování služby konzultantem', external: '', bonus: 110, ukony: 1, devices: '' },
-            { sku: 'S0063', category: 'iPhony/Mac', internal: 'Jakýkoliv díl na iPhone 6-11 (včetně pro modelů) pro ZKZ', external: 'Pro zákazníka výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 6 až 11', bonus: 110, ukony: 1, devices: 'iPhone 6, iPhone 6 Plus, iPhone 7, iPhone 7 Plus, iPhone 8, iPhone 8 Plus, iPhone X, iPhone XS, iPhone XS Max, iPhone XR, iPhone 11, iPhone 11 Pro, iPhone 11 Pro Max' },
-            { sku: 'S0064', category: 'iPhony/Mac', internal: 'Jakýkoliv díl na iPhone 12 a výše nebo výměna 2 dílů na jakém koliv modelu pro ZKZ', external: 'Pro zákazníka výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 12 a dále, výměna displeje', bonus: 220, ukony: 1.5, devices: 'iPhone 12 mini, iPhone 12, iPhone 12 Pro, iPhone 12 Pro Max, iPhone 13 mini, iPhone 13, iPhone 13 Pro, iPhone 13 Pro Max, iPhone 14, iPhone 14 Plus, iPhone 14 Pro, iPhone 14 Pro Max' },
-            { sku: 'S0065', category: 'iPhony/Mac', internal: 'Výměna housingu na jakýkoliv model - Platí jak u výkupu', external: '', bonus: 275, ukony: 2, devices: 'iPhone 6, iPhone 6 Plus, iPhone 7, iPhone 7 Plus, iPhone 8, iPhone 8 Plus, iPhone X, iPhone XS, iPhone XS Max, iPhone XR, iPhone 11, iPhone 11 Pro, iPhone 11 Pro Max, iPhone 12 mini, iPhone 12, iPhone 12 Pro, iPhone 12 Pro Max, iPhone 13 mini, iPhone 13, iPhone 13 Pro, iPhone 13 Pro Max, iPhone 14, iPhone 14 Plus, iPhone 14 Pro, iPhone 14 Pro Max' },
-            { sku: 'P77777', category: 'Ovladače', internal: 'DualSense Wireless Controller bílý', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'P77778', category: 'Ovladače', internal: 'DualSense Wireless Controller mix barev', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'P77779', category: 'Ovladače', internal: 'Sony DualShock 4 Controller Black V2', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'P77780', category: 'Ovladače', internal: 'Sony DualShock 4 Controller V2 mix barev', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'P77784', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair neonově červený/neonově modrý', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'P77785', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair mix barev', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'P77786', category: 'Ovladače', internal: 'Nintendo Switch Pro Controller ovladač mix barev', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'P77787', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (USB-C)', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'P77788', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (micro USB)', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'P77789', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (USB-C)', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'P77790', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (micro USB)', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'P77791', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (USB-C)', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'P77792', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (micro USB)', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'PLACEHOLDER', category: 'Zalistování výkupů', internal: 'Zde budou informace o zalistování výkupů. Data budou brzy doplněna.', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'Konzole', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'Android', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'iPhone', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nRozbitý/neoriginální displej: N\nStav zařízení: Y\nJe LCD originální: Y\nDiagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'iPad', category: 'Interní popisek výkupů', internal: 'SN zařízení ríma: 19.7.2025\nSN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\nJe LCD originální: Y\nDiagnostiky: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'Apple Watch', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nJe LCD originální: Y\nDiagnostiky: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'Apple Pencil/Magic Mouse', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nFunkční test: OK\nStav zařízení: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'MacBook', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nDiagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'iMac, Mac mini, Mac Studio', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nDiagnostiky: FT OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'DEMO', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK/ funkční testy\n\nZpracoval dne: 19.7.2025', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'ZAPU', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: 0, ukony: 0, devices: '' },
-            { sku: 'VRATKA', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: 0, ukony: 0, devices: '' },
-        ];
+        // Odkaz na Excel soubor na SharePointu/OneDrive
+        const excelFileLink = 'https://smartycz-my.sharepoint.com/:x:/g/personal/filip_musilek_iwant_cz/EbrGrCc9F_hNmvYR89OlVUMBi_2TquaH1OYaUMa03FqNOg?download=1';
+
+        // Funkce pro načtení a zpracování dat z Excel souboru
+        async function loadDataFromExcel(url) {
+            const tasksGrid = document.getElementById('tasks-grid');
+            tasksGrid.innerHTML = '<div class="loader col-span-full"></div><p class="text-center col-span-full text-slate-600 -mt-8">Načítám data ze souboru, prosím o strpení...</p>';
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Chyba sítě: ${response.statusText}`);
+                }
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: 'buffer' });
+                const worksheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[worksheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                return jsonData;
+            } catch (error) {
+                console.error('Chyba při načítání dat z Excelu:', error);
+                tasksGrid.innerHTML = '<p class="text-center col-span-full text-red-600 font-bold p-4 bg-red-100 rounded-lg">Nepodařilo se načíst data. Zkontrolujte prosím odkaz na soubor, připojení k internetu, nebo zda nejste na firemní VPN, která by mohla blokovat přístup.</p>';
+                return [];
+            }
+        }
         
-        document.addEventListener('DOMContentLoaded', () => {
+        // Celá logika stránky se spouští až po načtení DOM a dat
+        document.addEventListener('DOMContentLoaded', async () => {
+            const serviceTasksData = await loadDataFromExcel(excelFileLink);
+
+            if (!serviceTasksData || serviceTasksData.length === 0) {
+                return; // Pokud se data nenačetla, dále nepokračujeme
+            }
+
             const tasksGrid = document.getElementById('tasks-grid');
             const filterButtonsContainer = document.getElementById('filter-buttons');
             const searchInput = document.getElementById('search');
@@ -157,15 +137,19 @@
                 tasksGrid.innerHTML = '';
                 const searchTerm = searchInput.value.toLowerCase();
 
-                serviceTasksData
+                const filteredData = serviceTasksData
                     .filter(task => (activeFilter === 'Vše' || task.category === activeFilter) && 
-                                   (task.internal.toLowerCase().includes(searchTerm) || 
-                                    task.external.toLowerCase().includes(searchTerm) ||
-                                    task.sku.toLowerCase().includes(searchTerm) ||
-                                    String(task.bonus).includes(searchTerm) ||
-                                    String(task.ukony).includes(searchTerm) ||
-                                    task.devices.toLowerCase().includes(searchTerm)))
-                    .forEach((task, index) => {
+                                   (String(task.internal || '').toLowerCase().includes(searchTerm) || 
+                                    String(task.external || '').toLowerCase().includes(searchTerm) ||
+                                    String(task.sku || '').toLowerCase().includes(searchTerm) ||
+                                    String(task.bonus || '').includes(searchTerm) ||
+                                    String(task.ukony || '').includes(searchTerm) ||
+                                    String(task.devices || '').toLowerCase().includes(searchTerm)));
+                
+                if (filteredData.length === 0) {
+                    tasksGrid.innerHTML = '<p class="text-center col-span-full text-slate-500">Žádné výsledky pro zadané kritérium.</p>';
+                } else {
+                    filteredData.forEach((task, index) => {
                         const card = document.createElement('div');
                         card.className = 'task-card bg-white p-5 rounded-lg shadow-md border border-slate-200 flex flex-col';
                         card.dataset.category = task.category;
@@ -204,14 +188,14 @@
                                 </div>
                                 <div class="relative">
                                     <h4 class="font-semibold text-slate-800 text-sm mb-1">${title}</h4>
-                                    <p class="description-item text-sm text-slate-600 whitespace-pre-wrap cursor-pointer hover:bg-slate-100 p-1 rounded">${task.internal}</p>
+                                    <p class="description-item text-sm text-slate-600 whitespace-pre-wrap cursor-pointer hover:bg-slate-100 p-1 rounded">${task.internal || ''}</p>
                                     <div class="description-copy-feedback">Popis zkopírován!</div>
                                 </div>
                             `;
                         } else {
                             let devicesHtml = '';
-                            if (task.devices && task.devices.trim() !== '' && task.devices !== '//////////') {
-                                const deviceList = task.devices.split(',').map(d => d.trim());
+                            if (task.devices && String(task.devices).trim() !== '') {
+                                const deviceList = String(task.devices).split(',').map(d => d.trim());
                                 const visibleDevices = deviceList.slice(0, 4);
                                 const hiddenDevices = deviceList.slice(4);
 
@@ -238,7 +222,7 @@
                                 </div>
                                 <div>
                                     <h4 class="font-semibold text-slate-800 text-sm mb-1">Interní popis:</h4>
-                                    <p class="text-sm text-slate-600 mb-3">${task.internal}</p>
+                                    <p class="text-sm text-slate-600 mb-3">${task.internal || ''}</p>
                                 </div>
                                 ${task.external ? `
                                 <div class="mt-auto pt-3 border-t border-slate-200">
@@ -253,6 +237,7 @@
                         card.innerHTML = cardContent;
                         tasksGrid.appendChild(card);
                     });
+                }
             }
 
             function getActiveButtonClasses(category) {
@@ -302,7 +287,6 @@
             }
 
             tasksGrid.addEventListener('click', (e) => {
-                // Zobrazit/skrýt další zařízení
                 if (e.target.classList.contains('show-more-btn')) {
                     const button = e.target;
                     const hiddenDevices = button.closest('.task-card').querySelector('.hidden-devices');
@@ -312,7 +296,6 @@
                     }
                 }
                 
-                // Zkopírovat SK kód
                 const skuItem = e.target.closest('.sku-item');
                 if (skuItem) {
                     const skuToCopy = skuItem.dataset.sku;
@@ -329,7 +312,6 @@
                     });
                 }
 
-                // Zkopírovat popis
                 const descriptionItem = e.target.closest('.description-item');
                 if (descriptionItem) {
                     const textToCopy = descriptionItem.innerText;
@@ -349,6 +331,7 @@
 
             searchInput.addEventListener('input', renderCards);
 
+            // Prvotní spuštění po načtení dat
             renderCards();
             setupFilters();
         });
