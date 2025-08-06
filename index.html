@@ -101,23 +101,43 @@
             let serviceTasksData = [];
             let activeFilter = 'Vše';
 
+            /**
+             * Robustní funkce pro parsování CSV, která správně處理vá uvozovky.
+             * @param {string} csvText - Textový řetězec v CSV formátu.
+             * @returns {Array<Object>} Pole objektů s daty.
+             */
             function parseCSV(csvText) {
-                const lines = csvText.trim().split('\n');
-                const headers = lines[0].split(',').map(h => h.trim());
+                const lines = csvText.trim().split(/\r\n|\n/);
                 const data = [];
+                const regex = /("([^"]|"")*"|[^,]*)(,|$)/g;
+
                 for (let i = 1; i < lines.length; i++) {
-                    const values = lines[i].split(',');
-                    const obj = {};
-                    // Předpokládáme, že pořadí sloupců je:
-                    // sku,category,internal,external,bonus,ukony,devices,mask
-                    obj.sku = values[0]?.trim() || '';
-                    obj.category = values[1]?.trim() || '';
-                    obj.internal = values[2]?.trim() || '';
-                    obj.external = values[3]?.trim() || '';
-                    obj.bonus = values[4]?.trim() || '0';
-                    obj.ukony = values[5]?.trim() || '0';
-                    obj.devices = values[6]?.trim() || '';
-                    obj.mask = values[7]?.trim() || '';
+                    const line = lines[i];
+                    if (!line.trim()) continue;
+
+                    let values = [];
+                    let match;
+                    regex.lastIndex = 0;
+                    while (match = regex.exec(line)) {
+                        let value = match[1];
+                        if (value.startsWith('"') && value.endsWith('"')) {
+                            value = value.slice(1, -1).replace(/""/g, '"');
+                        }
+                        values.push(value.trim());
+                        if (match[3] === '') break;
+                    }
+
+                    // Očekávané pořadí sloupců v Google Sheetu
+                    const obj = {
+                        sku:      values[0] || '',
+                        category: values[1] || '',
+                        internal: values[2] || '',
+                        external: values[3] || '',
+                        bonus:    values[4] || '0',
+                        ukony:    values[5] || '0',
+                        devices:  values[6] || '',
+                        mask:     values[7] || ''
+                    };
                     data.push(obj);
                 }
                 return data;
@@ -134,11 +154,9 @@
                     const csvText = await response.text();
                     serviceTasksData = parseCSV(csvText);
                     
-                    // Povolíme vyhledávání a nastavíme placeholder
                     searchInput.disabled = false;
                     searchInput.placeholder = 'Např. baterie, S0033...';
 
-                    // Inicializujeme aplikaci
                     renderCards();
                     setupFilters();
                 } catch (error) {
@@ -166,25 +184,23 @@
                     return;
                 }
 
+                const uniqueCategories = [...new Set(serviceTasksData.map(t => t.category))];
+                const colorMap = ['blue', 'green', 'red', 'purple', 'orange', 'yellow', 'pink', 'teal', 'indigo', 'cyan', 'lime', 'gray'];
+
                 filteredData.forEach((task, index) => {
                         const card = document.createElement('div');
                         card.className = 'task-card bg-white p-5 rounded-lg shadow-md border border-slate-200 flex flex-col';
                         card.dataset.category = task.category;
 
-                        let categoryBgClass = 'bg-slate-100';
-                        let categoryTextClass = 'text-slate-800';
-
-                        // Dynamické barvy podle kategorií
-                        const colors = ['blue', 'green', 'red', 'purple', 'orange', 'yellow', 'pink', 'teal', 'emerald', 'cyan', 'lime'];
-                        const categoryIndex = [...new Set(serviceTasksData.map(t => t.category))].indexOf(task.category);
-                        const color = colors[categoryIndex % colors.length];
+                        const categoryIndex = uniqueCategories.indexOf(task.category);
+                        const color = colorMap[categoryIndex % colorMap.length];
                         
-                        categoryBgClass = `bg-${color}-100`;
-                        categoryTextClass = `text-${color}-800`;
+                        const categoryBgClass = `bg-${color}-100`;
+                        const categoryTextClass = `text-${color}-800`;
 
                         let devicesHtml = '';
                         if (task.devices && task.devices.trim() !== '') {
-                            const deviceList = task.devices.split(';').map(d => d.trim()); // Změna na oddělovač ;
+                            const deviceList = task.devices.split(';').map(d => d.trim());
                             devicesHtml = `
                                 <div class="mt-3 pt-3 border-t border-slate-200">
                                     <h4 class="font-semibold text-slate-800 text-sm mb-2">Zařízení:</h4>
@@ -223,34 +239,47 @@
                         tasksGrid.appendChild(card);
                     });
             }
+            
+            function getActiveButtonClasses(category, colorMap, uniqueCategories) {
+                if (category === 'Vše') {
+                    return ['bg-sky-600', 'text-white', 'font-semibold'];
+                }
+                const categoryIndex = uniqueCategories.indexOf(category);
+                const color = colorMap[categoryIndex % colorMap.length];
+                return [`bg-${color}-600`, 'text-white', 'font-semibold'];
+            }
 
             function setupFilters() {
-                const categories = [...new Set(serviceTasksData.map(task => task.category))];
-                const buttons = ['Vše', ...categories];
+                const uniqueCategories = [...new Set(serviceTasksData.map(task => task.category))];
+                const colorMap = ['blue', 'green', 'red', 'purple', 'orange', 'yellow', 'pink', 'teal', 'indigo', 'cyan', 'lime', 'gray'];
+                const buttons = ['Vše', ...uniqueCategories];
                 const inactiveClasses = ['bg-slate-200', 'hover:bg-slate-300', 'text-slate-700'];
 
                 filterButtonsContainer.innerHTML = buttons.map(category => {
                     const isActive = category === 'Vše';
-                    const activeClasses = 'bg-sky-600 text-white font-semibold';
-                    const buttonClasses = isActive ? activeClasses : inactiveClasses.join(' ');
-                    return `<button class="filter-btn px-3 py-1.5 text-sm rounded-md transition-colors duration-200 ${buttonClasses}" data-category="${category}">${category}</button>`;
+                    const activeClasses = getActiveButtonClasses(category, colorMap, uniqueCategories);
+                    const buttonClasses = isActive ? activeClasses.join(' ') : inactiveClasses.join(' ');
+                    const activeAttr = isActive ? 'data-active="true"' : '';
+                    return `<button class="filter-btn px-3 py-1.5 text-sm rounded-md transition-colors duration-200 ${buttonClasses}" data-category="${category}" ${activeAttr}>${category}</button>`;
                 }).join('');
 
                 filterButtonsContainer.addEventListener('click', (e) => {
                     const targetButton = e.target.closest('.filter-btn');
                     if (!targetButton) return;
 
-                    // Deaktivace starého tlačítka
-                    const oldActiveButton = filterButtonsContainer.querySelector('.bg-sky-600');
-                    if(oldActiveButton) {
-                        oldActiveButton.classList.remove('bg-sky-600', 'text-white', 'font-semibold');
-                        oldActiveButton.classList.add(...inactiveClasses);
+                    const currentActiveButton = filterButtonsContainer.querySelector('[data-active="true"]');
+                    if (currentActiveButton) {
+                        const oldCategory = currentActiveButton.dataset.category;
+                        currentActiveButton.classList.remove(...getActiveButtonClasses(oldCategory, colorMap, uniqueCategories));
+                        currentActiveButton.classList.add(...inactiveClasses);
+                        currentActiveButton.removeAttribute('data-active');
                     }
                     
-                    // Aktivace nového tlačítka
-                    activeFilter = targetButton.dataset.category;
+                    const newCategory = targetButton.dataset.category;
                     targetButton.classList.remove(...inactiveClasses);
-                    targetButton.classList.add('bg-sky-600', 'text-white', 'font-semibold');
+                    targetButton.classList.add(...getActiveButtonClasses(newCategory, colorMap, uniqueCategories));
+                    targetButton.setAttribute('data-active', 'true');
+                    activeFilter = newCategory;
 
                     renderCards();
                 });
@@ -283,7 +312,6 @@
 
             searchInput.addEventListener('input', renderCards);
 
-            // Spustíme načítání dat
             fetchAndRender();
         });
     </script>
