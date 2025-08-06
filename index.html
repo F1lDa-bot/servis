@@ -56,39 +56,26 @@
                 if (!response.ok) throw new Error(`Chyba sítě: ${response.statusText}`);
                 const csvText = await response.text();
 
-                // Odstraní prázdné řádky a najde první řádek se záhlavím
                 let lines = csvText.trim().split(/\r\n|\n/);
-                let headerIndex = -1;
-                for(let i = 0; i < lines.length; i++) {
-                    if (lines[i].trim() !== '') {
-                        headerIndex = i;
-                        break;
-                    }
-                }
-
-                if (headerIndex === -1) {
-                    throw new Error("V souboru nebyla nalezena žádná data.");
-                }
+                let headerIndex = lines.findIndex(line => line.trim().startsWith('sku'));
+                if (headerIndex === -1) throw new Error("V souboru nebyl nalezen řádek se záhlavím ('sku').");
 
                 const headers = lines[headerIndex].split(',').map(h => h.trim());
                 const dataLines = lines.slice(headerIndex + 1);
                 
                 const jsonData = dataLines.map(line => {
-                    if (line.trim() === '') return null; // Přeskočí prázdné řádky v datech
+                    if (line.trim() === '') return null;
                     const values = line.match(/(".*?"|[^",\r\n]+)(?=\s*,|\s*$)/g) || [];
                     
                     const obj = {};
-                    for (let i = 0; i < headers.length; i++) {
-                        if (headers[i]) {
-                            let value = (values[i] || '').trim();
-                            if (value.startsWith('"') && value.endsWith('"')) {
-                                value = value.slice(1, -1);
-                            }
-                            obj[headers[i]] = value.replace(/""/g, '"');
+                    headers.forEach((header, i) => {
+                        if (header) {
+                            let value = (values[i] || '').trim().replace(/^"|"$/g, '').replace(/""/g, '"');
+                            obj[header] = value;
                         }
-                    }
+                    });
                     return obj;
-                }).filter(Boolean); // Odstraní null hodnoty z prázdných řádků
+                }).filter(Boolean);
                 return jsonData;
 
             } catch (error) {
@@ -99,6 +86,12 @@
         }
         
         document.addEventListener('DOMContentLoaded', async () => {
+            // Seznam SK kódů, u kterých se nemá zobrazovat "Co jsem opravil:"
+            const skusToExcludeExternal = [
+                'S8805', 'S8804', 'S8800', 'S8177', 'S0159', 'S0019', 'S0003', 'S0001', 'S0102', 
+                'S0160', 'S0158', 'S0018', 'S0031', '15642', 'S0021', '196266', 'S0065'
+            ];
+            
             const serviceTasksData = await loadDataFromSheet(googleSheetLink);
 
             if (!serviceTasksData || serviceTasksData.length === 0) return;
@@ -114,14 +107,16 @@
                 tasksGrid.innerHTML = '';
                 const searchTerm = searchInput.value.toLowerCase();
 
-                const filteredData = serviceTasksData
-                    .filter(task => task.sku && (activeFilter === 'Vše' || task.category === activeFilter) && 
-                                   (String(task.internal || '').toLowerCase().includes(searchTerm) || 
-                                    String(task.external || '').toLowerCase().includes(searchTerm) ||
-                                    String(task.sku || '').toLowerCase().includes(searchTerm) ||
-                                    String(task.bonus || '').includes(searchTerm) ||
-                                    String(task.ukony || '').includes(searchTerm) ||
-                                    String(task.devices || '').toLowerCase().includes(searchTerm)));
+                const filteredData = serviceTasksData.filter(task => 
+                    task.sku && (activeFilter === 'Vše' || task.category === activeFilter) && (
+                        String(task.internal || '').toLowerCase().includes(searchTerm) || 
+                        String(task.external || '').toLowerCase().includes(searchTerm) ||
+                        String(task.sku || '').toLowerCase().includes(searchTerm) ||
+                        String(task.bonus || '').includes(searchTerm) ||
+                        String(task.ukony || '').includes(searchTerm) ||
+                        String(task.devices || '').toLowerCase().includes(searchTerm)
+                    )
+                );
                 
                 if (filteredData.length === 0) {
                     tasksGrid.innerHTML = '<p class="text-center col-span-full text-slate-500">Žádné výsledky pro zadané kritérium.</p>';
@@ -147,6 +142,7 @@
                         }
 
                         let cardContent = '';
+                        const showExternal = task.external && String(task.external).trim() !== '' && !skusToExcludeExternal.includes(task.sku);
 
                         if (task.category === 'Ovladače' || task.category === 'Zalistování výkupů' || task.category === 'Interní popisek výkupů') {
                              let title = 'Informace:';
@@ -201,7 +197,7 @@
                                     <h4 class="font-semibold text-slate-800 text-sm mb-1">Interní popis:</h4>
                                     <p class="text-sm text-slate-600 mb-3">${task.internal || ''}</p>
                                 </div>
-                                ${task.external && String(task.external).trim() !== '' ? `
+                                ${showExternal ? `
                                 <div class="mt-auto pt-3 border-t border-slate-200">
                                     <h4 class="font-semibold text-slate-800 text-sm mb-1">Co jsem opravil:</h4>
                                     <p class="text-sm text-slate-900 font-medium">${task.external}</p>
@@ -250,8 +246,8 @@
                     if (!targetButton || targetButton === activeButton) return;
 
                     const oldActiveClasses = getActiveButtonClasses(activeFilter);
-                    activeButton.classList.remove(...oldActiveClasses);
-                    activeButton.classList.add(...inactiveClasses);
+                    if(activeButton) activeButton.classList.remove(...oldActiveClasses);
+                    if(activeButton) activeButton.classList.add(...inactiveClasses);
 
                     activeFilter = targetButton.dataset.category;
                     activeButton = targetButton;
@@ -275,33 +271,23 @@
                 
                 const skuItem = e.target.closest('.sku-item');
                 if (skuItem) {
-                    const skuToCopy = skuItem.dataset.sku;
-                    navigator.clipboard.writeText(skuToCopy).then(() => {
+                    navigator.clipboard.writeText(skuItem.dataset.sku).then(() => {
                         const feedback = skuItem.nextElementSibling;
                         if(feedback) {
                             feedback.style.opacity = '1';
-                            setTimeout(() => {
-                               feedback.style.opacity = '0';
-                            }, 1500);
+                            setTimeout(() => { feedback.style.opacity = '0'; }, 1500);
                         }
-                    }).catch(err => {
-                        console.error('Nepodařilo se zkopírovat SK kód:', err);
                     });
                 }
 
                 const descriptionItem = e.target.closest('.description-item');
                 if (descriptionItem) {
-                    const textToCopy = descriptionItem.innerText;
-                    navigator.clipboard.writeText(textToCopy).then(() => {
+                    navigator.clipboard.writeText(descriptionItem.innerText).then(() => {
                         const feedback = descriptionItem.nextElementSibling;
                         if(feedback) {
                             feedback.style.opacity = '1';
-                            setTimeout(() => {
-                               feedback.style.opacity = '0';
-                            }, 1500);
+                            setTimeout(() => { feedback.style.opacity = '0'; }, 1500);
                         }
-                    }).catch(err => {
-                        console.error('Nepodařilo se zkopírovat popis:', err);
                     });
                 }
             });
