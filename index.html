@@ -101,11 +101,6 @@
             let serviceTasksData = [];
             let activeFilter = 'Vše';
 
-            /**
-             * Robustní funkce pro parsování CSV, která správně處理vá uvozovky.
-             * @param {string} csvText - Textový řetězec v CSV formátu.
-             * @returns {Array<Object>} Pole objektů s daty.
-             */
             function parseCSV(csvText) {
                 const lines = csvText.trim().split(/\r\n|\n/);
                 const data = [];
@@ -127,7 +122,6 @@
                         if (match[3] === '') break;
                     }
 
-                    // Očekávané pořadí sloupců v Google Sheetu
                     const obj = {
                         sku:      values[0] || '',
                         category: values[1] || '',
@@ -227,7 +221,7 @@
                             </div>
                             ${task.external ? `
                             <div class="mt-auto pt-3 border-t border-slate-200">
-                                <h4 class="font-semibold text-slate-800 text-sm mb-1">Popis pro zákazníka:</h4>
+                                <h4 class="font-semibold text-slate-800 text-sm mb-1">Popis opravy:</h4>
                                 <p class="description-item text-sm text-slate-900 font-medium cursor-pointer hover:bg-slate-100 p-1 rounded">${task.external}</p>
                                 <div class="description-copy-feedback">Popis zkopírován!</div>
                             </div>
