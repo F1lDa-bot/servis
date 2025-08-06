@@ -33,6 +33,33 @@
             transition: opacity 0.3s ease;
             pointer-events: none;
         }
+        .description-copy-feedback {
+            position: absolute;
+            bottom: -28px;
+            left: 0;
+            background-color: #22c55e;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+         .loader {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 40px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -47,11 +74,12 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="md:col-span-1">
                     <label for="search" class="block text-sm font-medium text-slate-700 mb-2">Vyhledat úkon (popis, SK, bonus...):</label>
-                    <input type="text" id="search" placeholder="Např. baterie, S0033..." class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500">
+                    <input type="text" id="search" placeholder="Načítám data..." class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500" disabled>
                 </div>
                 <div class="md:col-span-2">
                     <h3 class="text-sm font-medium text-slate-700 mb-2">Filtrovat podle kategorie:</h3>
                     <div id="filter-buttons" class="flex flex-wrap gap-2">
+                         <span class="text-slate-500">Načítám...</span>
                     </div>
                 </div>
             </div>
@@ -59,63 +87,66 @@
 
         <main>
             <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                 <div class="loader"></div>
             </div>
         </main>
     </div>
 
     <script>
-        // Data jsou nyní vložena přímo zde na základě nového PDF.
-        const serviceTasksData = [
-          { sku: 'S0033', category: 'Playstation externí opravy', internal: 'LB1 - Výměna HDD/SSD u PlayStation konzolí', bonus: '100', ukony: '1' },
-          { sku: 'S0034', category: 'Playstation externí opravy', internal: 'LB2 - Výměna jednoho dílu u PS4', bonus: '170', ukony: '1.5' },
-          { sku: 'S0035', category: 'Playstation externí opravy', internal: 'LB3 - Výměna více dílů u PS4 nebo výměnu jednoho dílu u PS5', bonus: '250', ukony: '1.75' },
-          { sku: 'S0142', category: 'Playstation externí opravy', internal: 'LB7 - Rozsáhlé opravy - pájení konektorů a čipů (neprovádí se na prodejnách)', bonus: '300', ukony: '2' },
-          { sku: 'S0042', category: 'Xbox externí opravy', internal: 'LB1 - Výměna HDD/SSD u Xbox konzolí', bonus: '100', ukony: '1' },
-          { sku: 'S0043', category: 'Xbox externí opravy', internal: 'LB2 - Výměna jednoho dílu u Xbox ONE/ Series S', bonus: '170', ukony: '1.5' },
-          { sku: 'S0044', category: 'Xbox externí opravy', internal: 'LB3 - Výměna více dílů u Xbox ONE/Series S nebo jednoho díli Xbox Series X', bonus: '250', ukony: '1.75' },
-          { sku: 'S0143', category: 'Xbox externí opravy', internal: 'LB7 - Rozsáhlé opravy - pájení konektorů a čipů (neprovádí se na prodejnách)', bonus: '300', ukony: '2' },
-          { sku: 'S0036', category: 'Nintendo externí opravy', internal: 'LB4-Oprava konzolí Nintendo', bonus: '150', ukony: '1.5' },
-          { sku: 'S0144', category: 'Nintendo externí opravy', internal: 'LB7 - Rozsáhlé opravy - pájení konektorů a čipů (neprovádí se na prodejnách)', bonus: '250', ukony: '2' },
-          { sku: 'S0037', category: 'Ovladače externí opravy', internal: 'LB1 - Výměna potenciometru, 1 jakýkoliv díl', bonus: '130', ukony: '1' },
-          { sku: 'S0038', category: 'Ovladače externí opravy', internal: 'LB2 - Pájení desky/konektoru, více jak 2 díly, opravy Elite', bonus: '170', ukony: '1.25' },
-          { sku: 'S0050', category: 'Gaming interní opravy', internal: 'LB1-Opravy všech ovladačů', bonus: '110', ukony: '1' },
-          { sku: 'S0051', category: 'Gaming interní opravy', internal: 'LB2 - Výměna jednoho dílu u konzolí, čištění + přepastování', bonus: '120', ukony: '1.25' },
-          { sku: 'S0052', category: 'Gaming interní opravy', internal: 'LB3 - Výměna více dílů u konzolí, nebo 1 u PS5, Xbox Series', bonus: '150', ukony: '1.5' },
-          { sku: 'S0053', category: 'Gaming interní opravy', internal: 'LB7 - Rozsáhlé opravy - pájení konektorů a čipů (neprovádí se na prodejnách)', bonus: '220', ukony: '1.75' },
-          { sku: 'S0063', category: 'Apple externí opravy', internal: 'L1 - Jeden díl na iPhone 6-11 (včetně pro modelů)', bonus: '130', ukony: '1.25' },
-          { sku: 'S0064', category: 'Apple externí opravy', internal: 'L2 - Jeden díl na iPhone 12 a výš nebo 2 díly na jakémkoliv modelu', bonus: '220', ukony: '1.5' },
-          { sku: 'S0065', category: 'Apple externí opravy', internal: 'L3-Housing na jakýkoliv model, nebo víc jak 2 díly 12 a novější, iPad', bonus: '275', ukony: '2' },
-          { sku: 'S0016', category: 'Apple interní opravy', internal: 'L1V - Jeden díl u iPhonu 6-11 (včetně pro modelů)', bonus: '100', ukony: '1' },
-          { sku: 'S0017', category: 'Apple interní opravy', internal: 'L2V - Jeden díl u iPhonu 12 a výš nebo 2 díly do 11 na jakémkoliv modelu', bonus: '175', ukony: '1.25' },
-          { sku: 'S0015', category: 'Apple interní opravy', internal: 'L3V - Housing na jakýkoliv model, nebo víc jak 2 díly 12 a novější, iPad', bonus: '225', ukony: '1.5' },
-          { sku: 'S0150', category: 'PC/Tigo externí opravy', internal: 'LB1 - Software, přesazení komponent', bonus: '100', ukony: '1' },
-          { sku: 'S0151', category: 'PC/Tigo externí opravy', internal: 'LB2-RAM, GPU', bonus: '150', ukony: '1.5' },
-          { sku: 'S0152', category: 'PC/Tigo externí opravy', internal: 'LB3-CPU, zdroj, ostatní', bonus: '200', ukony: '2' },
-          { sku: 'S8800', category: 'Externí služby', internal: 'Diagnostika a čištění ovladače', bonus: '15% bez DPH', ukony: '1' },
-          { sku: 'S8805', category: 'Externí služby', internal: 'Diagnostika a čištění konzole', bonus: '15% bez DPH', ukony: '1' },
-          { sku: 'S8804', category: 'Externí služby', internal: 'Update/obnovení softwaru konzole', bonus: '15% bez DPH', ukony: '1' },
-          { sku: 'S8777', category: 'Externí služby', internal: 'Čištění a přepastování konzolí PS4, PS5, Xbox One,X,S', bonus: '15% bez DPH', ukony: '1' },
-          { sku: 'S0019', category: 'Externí služby', internal: 'Reinstalace iOS', bonus: '15% bez DPH', ukony: '1' },
-          { sku: 'S0003', category: 'Externí služby', internal: 'Reinstalace MacOS', bonus: '15% bez DPH', ukony: '1' },
-          { sku: 'S0001', category: 'Externí služby', internal: 'Diagnostika zařízení a čištění iOS/Android', bonus: '15% bez DPH', ukony: '1' },
-          { sku: 'S0102', category: 'Externí služby', internal: 'Diagnostikazařízení a čištění Airpods/EarPods', bonus: '15% bez DPH', ukony: '1' },
-          { sku: 'S0021', category: 'Externí služby', internal: 'Nezáruční zamítnutí reklamace iOS', bonus: '15% bez DPH', ukony: '1' },
-          { sku: 'S0160', category: 'Interní služby', internal: 'Diagnostika a čištění DEMO a vratek', bonus: '30', ukony: '0.25' },
-          { sku: 'S0018', category: 'Interní služby', internal: 'Kontrola výkupu diagnostika a čištění následné odeslání např na jinou prodejnu', bonus: '30', ukony: '0.25' },
-          { sku: 'S0031', category: 'Interní služby', internal: 'Zamítnutí záruční reklamace', bonus: '20', ukony: '0.25' },
-          { sku: 'S0158', category: 'Interní služby', internal: 'Zpracování výkupu na prodejně technikem iPhone Androin, Mac', bonus: '40', ukony: '0.25' },
-          { sku: 'S0159', category: 'Interní služby', internal: 'Zpracování výkupu technikem na prodejně Konzole, Watch', bonus: '100', ukony: '0.5' },
-          { sku: '15642', category: 'Interní služby', internal: 'Doplnění ceny u opravy', bonus: '0', ukony: '0' },
-          { sku: '196266', category: 'Interní služby', internal: 'Zprostředkování služby konzultantem', bonus: '20', ukony: '0' }
-        ];
-        
         document.addEventListener('DOMContentLoaded', () => {
             const tasksGrid = document.getElementById('tasks-grid');
             const filterButtonsContainer = document.getElementById('filter-buttons');
             const searchInput = document.getElementById('search');
-
-            const categories = [...new Set(serviceTasksData.map(task => task.category))];
+            
+            let serviceTasksData = [];
             let activeFilter = 'Vše';
+
+            function parseCSV(csvText) {
+                const lines = csvText.trim().split('\n');
+                const headers = lines[0].split(',').map(h => h.trim());
+                const data = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const values = lines[i].split(',');
+                    const obj = {};
+                    // Předpokládáme, že pořadí sloupců je:
+                    // sku,category,internal,external,bonus,ukony,devices,mask
+                    obj.sku = values[0]?.trim() || '';
+                    obj.category = values[1]?.trim() || '';
+                    obj.internal = values[2]?.trim() || '';
+                    obj.external = values[3]?.trim() || '';
+                    obj.bonus = values[4]?.trim() || '0';
+                    obj.ukony = values[5]?.trim() || '0';
+                    obj.devices = values[6]?.trim() || '';
+                    obj.mask = values[7]?.trim() || '';
+                    data.push(obj);
+                }
+                return data;
+            }
+
+            async function fetchAndRender() {
+                const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRkcl4elSIq_DeO9ohJmjdr5bU4JN8hWrw7KQOMwzwo3W8Ge8XmFWHmcKTYXK3dFcuPDOQQz9sCEWc2/pub?gid=1520044807&single=true&output=csv';
+                
+                try {
+                    const response = await fetch(sheetUrl);
+                    if (!response.ok) {
+                        throw new Error(`Chyba při načítání dat: ${response.statusText}`);
+                    }
+                    const csvText = await response.text();
+                    serviceTasksData = parseCSV(csvText);
+                    
+                    // Povolíme vyhledávání a nastavíme placeholder
+                    searchInput.disabled = false;
+                    searchInput.placeholder = 'Např. baterie, S0033...';
+
+                    // Inicializujeme aplikaci
+                    renderCards();
+                    setupFilters();
+                } catch (error) {
+                    tasksGrid.innerHTML = `<p class="text-red-500 font-semibold col-span-full text-center">${error.message}</p>`;
+                    console.error("Nepodařilo se načíst data z Google Sheetu:", error);
+                }
+            }
+
 
             function renderCards() {
                 tasksGrid.innerHTML = '';
@@ -123,15 +154,19 @@
 
                 const filteredData = serviceTasksData
                     .filter(task => (activeFilter === 'Vše' || task.category === activeFilter) && 
-                                   (String(task.internal || '').toLowerCase().includes(searchTerm) || 
-                                    String(task.sku || '').toLowerCase().includes(searchTerm) ||
-                                    String(task.bonus || '').toLowerCase().includes(searchTerm) ||
-                                    String(task.ukony || '').toLowerCase().includes(searchTerm)));
-                
+                                   (task.internal.toLowerCase().includes(searchTerm) || 
+                                    (task.external && task.external.toLowerCase().includes(searchTerm)) ||
+                                    task.sku.toLowerCase().includes(searchTerm) ||
+                                    String(task.bonus).toLowerCase().includes(searchTerm) ||
+                                    String(task.ukony).toLowerCase().includes(searchTerm) ||
+                                    task.devices.toLowerCase().includes(searchTerm)));
+
                 if (filteredData.length === 0) {
-                    tasksGrid.innerHTML = '<p class="text-center col-span-full text-slate-500">Žádné výsledky pro zadané kritérium.</p>';
-                } else {
-                    filteredData.forEach((task) => {
+                    tasksGrid.innerHTML = `<p class="text-slate-500 col-span-full text-center">Nebyly nalezeny žádné úkony pro zadaná kritéria.</p>`;
+                    return;
+                }
+
+                filteredData.forEach((task, index) => {
                         const card = document.createElement('div');
                         card.className = 'task-card bg-white p-5 rounded-lg shadow-md border border-slate-200 flex flex-col';
                         card.dataset.category = task.category;
@@ -139,107 +174,117 @@
                         let categoryBgClass = 'bg-slate-100';
                         let categoryTextClass = 'text-slate-800';
 
-                        // Simplified color coding based on keywords
-                        if (task.category.toLowerCase().includes('playstation')) { categoryBgClass = 'bg-blue-100'; categoryTextClass = 'text-blue-800'; }
-                        else if (task.category.toLowerCase().includes('xbox')) { categoryBgClass = 'bg-green-100'; categoryTextClass = 'text-green-800'; }
-                        else if (task.category.toLowerCase().includes('nintendo')) { categoryBgClass = 'bg-red-100'; categoryTextClass = 'text-red-800'; }
-                        else if (task.category.toLowerCase().includes('apple')) { categoryBgClass = 'bg-yellow-100'; categoryTextClass = 'text-yellow-800'; }
-                        else if (task.category.toLowerCase().includes('pc') || task.category.toLowerCase().includes('tigo')) { categoryBgClass = 'bg-indigo-100'; categoryTextClass = 'text-indigo-800'; }
-                        else if (task.category.toLowerCase().includes('ovladače')) { categoryBgClass = 'bg-pink-100'; categoryTextClass = 'text-pink-800'; }
-                        else if (task.category.toLowerCase().includes('gaming')) { categoryBgClass = 'bg-purple-100'; categoryTextClass = 'text-purple-800'; }
-                        else if (task.category.toLowerCase().includes('služby')) { categoryBgClass = 'bg-teal-100'; categoryTextClass = 'text-teal-800'; }
+                        // Dynamické barvy podle kategorií
+                        const colors = ['blue', 'green', 'red', 'purple', 'orange', 'yellow', 'pink', 'teal', 'emerald', 'cyan', 'lime'];
+                        const categoryIndex = [...new Set(serviceTasksData.map(t => t.category))].indexOf(task.category);
+                        const color = colors[categoryIndex % colors.length];
+                        
+                        categoryBgClass = `bg-${color}-100`;
+                        categoryTextClass = `text-${color}-800`;
 
+                        let devicesHtml = '';
+                        if (task.devices && task.devices.trim() !== '') {
+                            const deviceList = task.devices.split(';').map(d => d.trim()); // Změna na oddělovač ;
+                            devicesHtml = `
+                                <div class="mt-3 pt-3 border-t border-slate-200">
+                                    <h4 class="font-semibold text-slate-800 text-sm mb-2">Zařízení:</h4>
+                                    <div class="flex flex-wrap gap-2">
+                                        ${deviceList.map(d => `<span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-md">${d}</span>`).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }
                         const cardContent = `
                             <div class="flex justify-between items-start mb-3 gap-2">
                                 <span class="inline-block ${categoryBgClass} ${categoryTextClass} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
                                 <div class="flex items-center gap-2 flex-wrap justify-end relative">
                                     <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2 py-1 rounded">Bonus: ${task.bonus}</span>
                                     <span class="text-xs font-mono bg-cyan-100 text-cyan-800 px-2 py-1 rounded">Úkony: ${task.ukony}</span>
-                                    <div class="relative">
-                                      <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
-                                      <div class="copy-feedback">Zkopírováno!</div>
-                                    </div>
+                                    <span class="text-xs font-mono bg-orange-100 text-orange-800 px-2 py-1 rounded">Maska: ${task.mask}</span>
+                                    <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
+                                    <div class="copy-feedback">Zkopírováno!</div>
                                 </div>
                             </div>
                             <div>
-                                <h4 class="font-semibold text-slate-800 text-sm mb-1">Popis úkonu:</h4>
-                                <p class="text-sm text-slate-600 mb-3">${task.internal || ''}</p>
+                                <h4 class="font-semibold text-slate-800 text-sm mb-1">Interní popis:</h4>
+                                <p class="text-sm text-slate-600 mb-3">${task.internal}</p>
                             </div>
-                            <div class="mt-auto"></div>
+                            ${task.external ? `
+                            <div class="mt-auto pt-3 border-t border-slate-200">
+                                <h4 class="font-semibold text-slate-800 text-sm mb-1">Popis pro zákazníka:</h4>
+                                <p class="description-item text-sm text-slate-900 font-medium cursor-pointer hover:bg-slate-100 p-1 rounded">${task.external}</p>
+                                <div class="description-copy-feedback">Popis zkopírován!</div>
+                            </div>
+                            ` : '<div class="mt-auto"></div>'}
+                            ${devicesHtml}
                         `;
                         
                         card.innerHTML = cardContent;
                         tasksGrid.appendChild(card);
                     });
-                }
-            }
-
-            function getActiveButtonClasses(category) {
-                if (category.toLowerCase().includes('playstation')) return ['bg-blue-600', 'text-white', 'font-semibold'];
-                if (category.toLowerCase().includes('xbox')) return ['bg-green-600', 'text-white', 'font-semibold'];
-                if (category.toLowerCase().includes('nintendo')) return ['bg-red-600', 'text-white', 'font-semibold'];
-                if (category.toLowerCase().includes('apple')) return ['bg-yellow-500', 'text-slate-900', 'font-semibold'];
-                if (category.toLowerCase().includes('pc') || category.toLowerCase().includes('tigo')) return ['bg-indigo-600', 'text-white', 'font-semibold'];
-                if (category.toLowerCase().includes('ovladače')) return ['bg-pink-600', 'text-white', 'font-semibold'];
-                if (category.toLowerCase().includes('gaming')) return ['bg-purple-600', 'text-white', 'font-semibold'];
-                if (category.toLowerCase().includes('služby')) return ['bg-teal-600', 'text-white', 'font-semibold'];
-                return ['bg-sky-600', 'text-white', 'font-semibold'];
             }
 
             function setupFilters() {
+                const categories = [...new Set(serviceTasksData.map(task => task.category))];
                 const buttons = ['Vše', ...categories];
                 const inactiveClasses = ['bg-slate-200', 'hover:bg-slate-300', 'text-slate-700'];
 
                 filterButtonsContainer.innerHTML = buttons.map(category => {
                     const isActive = category === 'Vše';
-                    const activeClasses = getActiveButtonClasses('Vše').join(' ');
+                    const activeClasses = 'bg-sky-600 text-white font-semibold';
                     const buttonClasses = isActive ? activeClasses : inactiveClasses.join(' ');
                     return `<button class="filter-btn px-3 py-1.5 text-sm rounded-md transition-colors duration-200 ${buttonClasses}" data-category="${category}">${category}</button>`;
                 }).join('');
-
-                let activeButton = filterButtonsContainer.querySelector('[data-category="Vše"]');
 
                 filterButtonsContainer.addEventListener('click', (e) => {
                     const targetButton = e.target.closest('.filter-btn');
                     if (!targetButton) return;
 
-                    const oldActiveClasses = getActiveButtonClasses(activeFilter);
-                    if (activeButton) {
-                      activeButton.classList.remove(...oldActiveClasses);
-                      activeButton.classList.add(...inactiveClasses);
+                    // Deaktivace starého tlačítka
+                    const oldActiveButton = filterButtonsContainer.querySelector('.bg-sky-600');
+                    if(oldActiveButton) {
+                        oldActiveButton.classList.remove('bg-sky-600', 'text-white', 'font-semibold');
+                        oldActiveButton.classList.add(...inactiveClasses);
                     }
-
+                    
+                    // Aktivace nového tlačítka
                     activeFilter = targetButton.dataset.category;
-                    activeButton = targetButton;
-                    const newActiveClasses = getActiveButtonClasses(activeFilter);
-                    activeButton.classList.remove(...inactiveClasses);
-                    activeButton.classList.add(...newActiveClasses);
+                    targetButton.classList.remove(...inactiveClasses);
+                    targetButton.classList.add('bg-sky-600', 'text-white', 'font-semibold');
 
                     renderCards();
                 });
             }
 
             tasksGrid.addEventListener('click', (e) => {
-                const skuItem = e.target.closest('.sku-item');
-                if (skuItem) {
-                    const skuToCopy = skuItem.dataset.sku;
-                    navigator.clipboard.writeText(skuToCopy).then(() => {
-                        const feedback = skuItem.nextElementSibling;
-                        if(feedback) {
-                            feedback.style.opacity = '1';
+                const copyAndShowFeedback = (textToCopy, feedbackElement) => {
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        if(feedbackElement) {
+                            feedbackElement.style.opacity = '1';
                             setTimeout(() => {
-                               feedback.style.opacity = '0';
+                               feedbackElement.style.opacity = '0';
                             }, 1500);
                         }
                     }).catch(err => {
-                        console.error('Nepodařilo se zkopírovat SK kód:', err);
+                        console.error('Nepodařilo se zkopírovat:', err);
                     });
+                };
+
+                const skuItem = e.target.closest('.sku-item');
+                if (skuItem) {
+                    copyAndShowFeedback(skuItem.dataset.sku, skuItem.nextElementSibling);
+                }
+
+                const descriptionItem = e.target.closest('.description-item');
+                if (descriptionItem) {
+                     copyAndShowFeedback(descriptionItem.innerText, descriptionItem.nextElementSibling);
                 }
             });
 
             searchInput.addEventListener('input', renderCards);
-            renderCards();
-            setupFilters();
+
+            // Spustíme načítání dat
+            fetchAndRender();
         });
     </script>
 </body>
