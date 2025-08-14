@@ -47,7 +47,6 @@
             transition: opacity 0.3s ease;
             pointer-events: none;
         }
-        /* ===== NOVÝ STYL PRO PLYNULÝ PŘECHOD ===== */
         #loading-status {
             transition: opacity 0.4s ease-out;
         }
@@ -164,6 +163,13 @@
                         devices:  values[6] || '',
                         mask:     values[7] || ''
                     };
+
+                    // KONTROLA A OBRANA PROTI ŠPATNÝM DATŮM
+                    if (!obj.category || obj.category.length > 50) {
+                        console.warn('Přeskakuji neplatný řádek v hlavní tabulce:', line);
+                        continue;
+                    }
+                    
                     data.push(obj);
                 }
                 return data;
@@ -184,19 +190,19 @@
                             devices:  '',
                             mask:     ''
                         };
+
+                        // KONTROLA A OBRANA PROTI ŠPATNÝM DATŮM
+                        if (!obj.category || obj.category.length > 50) {
+                            console.warn('Přeskakuji neplatný řádek ve druhé tabulce:', lines.slice(i, i+3).join(' | '));
+                            continue;
+                        }
+
                         data.push(obj);
                     }
                 }
                 return data;
             }
             
-            // ===== NOVÁ POMOCNÁ FUNKCE PRO AKTUALIZACI UKAZATELE NAČÍTÁNÍ (DRY) =====
-            /**
-             * Aktualizuje vizuální stav progress baru a jeho textového popisu.
-             * @param {'start' | 'finish' | 'error'} state - Stav načítání.
-             * @param {string} statusElId - ID elementu pro textový status (např. 'main-data-status').
-             * @param {string} progressElId - ID elementu pro progress bar (např. 'main-data-progress').
-             */
             function updateProgress(state, statusElId, progressElId) {
                 const statusEl = document.getElementById(statusElId);
                 const progressEl = document.getElementById(progressElId);
@@ -221,7 +227,6 @@
                         break;
                 }
             }
-
 
             async function fetchAndRender() {
                 const mainSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vROv8zB3q6razPMGZG3EFMK64BAL7Gsu004ogifQi4o757uS1-C1kFOuNJ_aFE0LgpSg6CiF2GyJwwQ/pub?gid=1555777155&single=true&output=csv';
@@ -254,7 +259,6 @@
                 `;
                 
                 try {
-                    // ===== POUŽITÍ NOVÉ POMOCNÉ FUNKCE =====
                     updateProgress('start', 'main-data-status', 'main-data-progress');
                     const mainResponse = await fetch(mainSheetUrl);
                     if (!mainResponse.ok) throw new Error('main');
@@ -275,11 +279,9 @@
                     searchInput.disabled = false;
                     searchInput.placeholder = 'Např. baterie, S0033...';
                     
-                    // ===== ZMĚNA: PŘIDÁN PLYNULÝ PŘECHOD (FADE-OUT) =====
                     const loadingIndicator = document.getElementById('loading-status');
                     if (loadingIndicator) {
                         loadingIndicator.style.opacity = '0';
-                        // Počkáme, až se dokončí animace (400ms), a pak vykreslíme karty
                         await new Promise(resolve => setTimeout(resolve, 400)); 
                     }
 
@@ -287,14 +289,12 @@
                     setupFilters();
 
                 } catch (error) {
-                    // Vylepšené chybové hlášky
                     if (error.message === 'main') {
                         updateProgress('error', 'main-data-status', 'main-data-progress');
                     } else if (error.message === 'secondary') {
                         updateProgress('error', 'secondary-data-status', 'secondary-data-progress');
                     }
                     console.error("Nepodařilo se načíst data z Google Sheetu:", error);
-                    // Můžeme přidat i zprávu do hlavního okna po chybě
                     const loadingStatusEl = document.getElementById('loading-status');
                     if(loadingStatusEl) {
                         const errorMsg = document.createElement('p');
@@ -304,8 +304,6 @@
                     }
                 }
             }
-
-            // ... zbytek kódu zůstává naprosto stejný ...
 
             function renderCards() {
                 tasksGrid.innerHTML = '';
