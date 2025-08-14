@@ -8,6 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals (Slate, Stone, Sky) with brand accents (Blue, Green, Red, Purple, Orange, Yellow, Pink, Teal, Dark Green) -->
+    <!-- Application Structure Plan: Původní dashboard rozložení s grafem bylo odstraněno na žádost uživatele. Nová struktura je jednodušší, jednolitá. Všechny ovládací prvky (vyhledávání, filtry kategorií) jsou umístěny nahoře nad seznamem úkonů pro snadný přístup. Seznam úkonů je zobrazen v mřížce pod filtry. Tento design zjednodušuje uživatelské rozhraní a zaměřuje se čistě na rychlé filtrování a vyhledávání dat bez doplňkových vizualizací. -->
+    <!-- Visualization & Content Choices: Graf byl odstraněn. Data jsou prezentována výhradně jako karty v mřížce (HTML/Tailwind). Nově byla přidána vizuální distinkce pomocí barev pro všechny kategorie pro rychlejší vizuální identifikaci. Aktivní filtr nyní barevně koresponduje s kategorií. Přidány údaje "Bonus", "Úkony" a seznam "Zařízení" s rozbalovací funkcí. Přidána funkce kopírování SK kódu a popisů po kliknutí. Karty pro některé kategorie jsou zjednodušené. Cíl: Informování a organizace. Interakce: Filtrování, vyhledávání, rozbalování detailů a kopírování (JS). -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -46,9 +50,6 @@
             opacity: 0;
             transition: opacity 0.3s ease;
             pointer-events: none;
-        }
-        #loading-status {
-            transition: opacity 0.4s ease-out;
         }
     </style>
 </head>
@@ -111,7 +112,8 @@
 
         <main>
             <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                </div>
+                 <!-- Loading indicator will be injected here -->
+            </div>
         </main>
     </div>
 
@@ -132,7 +134,37 @@
             let activeFilter = 'Vše';
             let dailyTasks = [];
 
-            function parseMainCSV(csvText) {
+            const localControllersData = [
+                { sku: 'P77777', category: 'Ovladače', internal: 'DualSense Wireless Controller bílý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77778', category: 'Ovladače', internal: 'DualSense Wireless Controller mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77779', category: 'Ovladače', internal: 'Sony DualShock 4 Controller Black V2', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77780', category: 'Ovladače', internal: 'Sony DualShock 4 Controller V2 mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77784', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair neonově červený/neonově modrý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77785', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77786', category: 'Ovladače', internal: 'Nintendo Switch Pro Controller ovladač mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77787', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77788', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77789', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77790', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77791', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77792', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }
+            ];
+
+            const localBuyoutDescriptionsData = [
+                { sku: 'Konzole', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'Android', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'iPhone', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nRozbitý/neoriginální displej: N\nStav zařízení: Y\nJe LCD originální: Y\nDiagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'iPad', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\nJe LCD originální: Y\nDiagnostiky: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'Apple Watch', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nJe LCD originální: Y\nDiagnostiky: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'Apple Pencil/Magic Mouse', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nFunkční test: OK\nStav zařízení: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'MacBook', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nDiagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'iMac, Mac mini, Mac Studio', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nDiagnostiky: FT OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'DEMO', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK/ funkční testy\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'ZAPU', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'VRATKA', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+            ];
+
+            function parseCSV(csvText) {
                 const lines = csvText.trim().split(/\r\n|\n/);
                 const data = [];
                 const regex = /("([^"]|"")*"|[^,]*)(,|$)/g;
@@ -163,76 +195,13 @@
                         devices:  values[6] || '',
                         mask:     values[7] || ''
                     };
-
-                    // ===== FINÁLNÍ KONTROLA DAT =====
-                    // Přeskakujeme řádky, které nemají kategorii, mají příliš dlouhou kategorii, NEBO OBSAHUJÍ ČÁRKU.
-                    if (!obj.category || obj.category.length > 40 || obj.category.includes(',')) {
-                        console.warn('Přeskakuji neplatný řádek v hlavní tabulce:', line);
-                        continue;
-                    }
-                    
                     data.push(obj);
                 }
                 return data;
             }
 
-            function parseSecondaryCSV(csvText) {
-                const lines = csvText.trim().split(/\r\n|\n/);
-                const data = [];
-                for (let i = 0; i < lines.length; i += 3) {
-                    if (i + 2 < lines.length && lines[i].trim() !== '') {
-                        const obj = {
-                            sku:      lines[i].trim(),
-                            category: lines[i + 1].trim(),
-                            internal: lines[i + 2].trim(),
-                            external: '',
-                            bonus:    '0',
-                            ukony:    '0',
-                            devices:  '',
-                            mask:     ''
-                        };
-
-                        // ===== FINÁLNÍ KONTROLA DAT =====
-                        // Stejná zpřísněná kontrola jako u první funkce.
-                        if (!obj.category || obj.category.length > 40 || obj.category.includes(',')) {
-                            console.warn('Přeskakuji neplatný řádek ve druhé tabulce:', lines.slice(i, i+3).join(' | '));
-                            continue;
-                        }
-
-                        data.push(obj);
-                    }
-                }
-                return data;
-            }
-            
-            function updateProgress(state, statusElId, progressElId) {
-                const statusEl = document.getElementById(statusElId);
-                const progressEl = document.getElementById(progressElId);
-                if (!statusEl || !progressEl) return;
-
-                switch (state) {
-                    case 'start':
-                        statusEl.textContent = 'Načítám...';
-                        progressEl.style.width = '50%';
-                        progressEl.classList.remove('bg-green-500', 'bg-red-500');
-                        progressEl.classList.add('bg-blue-600');
-                        break;
-                    case 'finish':
-                        statusEl.textContent = 'Hotovo ✔';
-                        progressEl.style.width = '100%';
-                        progressEl.classList.replace('bg-blue-600', 'bg-green-500');
-                        break;
-                    case 'error':
-                        statusEl.textContent = 'Chyba ❌';
-                        progressEl.style.width = '100%';
-                        progressEl.classList.replace('bg-blue-600', 'bg-red-500');
-                        break;
-                }
-            }
-
             async function fetchAndRender() {
-                const mainSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vROv8zB3q6razPMGZG3EFMK64BAL7Gsu004ogifQi4o757uS1-C1kFOuNJ_aFE0LgpSg6CiF2GyJwwQ/pub?gid=1555777155&single=true&output=csv';
-                const secondarySheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTAslRCf5yTU5m5NruxIi-efp3y6iul8MUGPGFAXSGFK8YnquYjX_ODWNDeHWbcAD-jTyu9mO3BKan-/pub?gid=0&single=true&output=csv';
+                const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vROv8zB3q6razPMGZG3EFMK64BAL7Gsu004ogifQi4o757uS1-C1kFOuNJ_aFE0LgpSg6CiF2GyJwwQ/pub?gid=1555777155&single=true&output=csv';
                 
                 tasksGrid.innerHTML = `
                     <div id="loading-status" class="col-span-full text-center p-8 bg-white rounded-lg shadow-md">
@@ -247,65 +216,42 @@
                                     <div id="main-data-progress" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
                                 </div>
                             </div>
-                            <div>
-                                <div class="flex justify-between mb-1">
-                                    <span class="text-base font-medium text-slate-700">Ostatní kategorie</span>
-                                    <span id="secondary-data-status" class="text-sm font-medium text-slate-500">Čekám...</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                    <div id="secondary-data-progress" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 `;
-                
-                try {
-                    updateProgress('start', 'main-data-status', 'main-data-progress');
-                    const mainResponse = await fetch(mainSheetUrl);
-                    if (!mainResponse.ok) throw new Error('main');
-                    const mainCsvText = await mainResponse.text();
-                    updateProgress('finish', 'main-data-status', 'main-data-progress');
 
-                    updateProgress('start', 'secondary-data-status', 'secondary-data-progress');
-                    const secondaryResponse = await fetch(secondarySheetUrl);
-                    if (!secondaryResponse.ok) throw new Error('secondary');
-                    const secondaryCsvText = await secondaryResponse.text();
-                    updateProgress('finish', 'secondary-data-status', 'secondary-data-progress');
+                const mainStatus = document.getElementById('main-data-status');
+                const mainProgress = document.getElementById('main-data-progress');
+
+                try {
+                    mainStatus.textContent = 'Načítám...';
+                    mainProgress.style.width = '50%';
+                    const response = await fetch(sheetUrl);
+                    if (!response.ok) {
+                        throw new Error(`Chyba při načítání dat: ${response.statusText}`);
+                    }
+                    const csvText = await response.text();
+                    let fetchedData = parseCSV(csvText);
                     
-                    let mainData = parseMainCSV(mainCsvText);
-                    let secondaryData = parseSecondaryCSV(secondaryCsvText);
+                    mainProgress.style.width = '100%';
+                    mainStatus.textContent = 'Hotovo ✔';
+                    mainProgress.classList.replace('bg-blue-600', 'bg-green-500');
                     
-                    serviceTasksData = mainData.concat(secondaryData);
+                    serviceTasksData = fetchedData.concat(localControllersData, localBuyoutDescriptionsData);
                     
                     searchInput.disabled = false;
                     searchInput.placeholder = 'Např. baterie, S0033...';
-                    
-                    const loadingIndicator = document.getElementById('loading-status');
-                    if (loadingIndicator) {
-                        loadingIndicator.style.opacity = '0';
-                        await new Promise(resolve => setTimeout(resolve, 400)); 
-                    }
+
+                    await new Promise(resolve => setTimeout(resolve, 500));
 
                     renderCards();
                     setupFilters();
-
                 } catch (error) {
-                    if (error.message === 'main') {
-                        updateProgress('error', 'main-data-status', 'main-data-progress');
-                    } else if (error.message === 'secondary') {
-                        updateProgress('error', 'secondary-data-status', 'secondary-data-progress');
-                    }
+                    tasksGrid.innerHTML = `<p class="text-red-500 font-semibold col-span-full text-center">${error.message}</p>`;
                     console.error("Nepodařilo se načíst data z Google Sheetu:", error);
-                    const loadingStatusEl = document.getElementById('loading-status');
-                    if(loadingStatusEl) {
-                        const errorMsg = document.createElement('p');
-                        errorMsg.className = "text-red-500 font-semibold text-center mt-4";
-                        errorMsg.textContent = "Chyba při načítání dat. Zkuste prosím obnovit stránku."
-                        loadingStatusEl.appendChild(errorMsg);
-                    }
                 }
             }
+
 
             function renderCards() {
                 tasksGrid.innerHTML = '';
@@ -313,7 +259,7 @@
 
                 const filteredData = serviceTasksData
                     .filter(task => (activeFilter === 'Vše' || task.category === activeFilter) && 
-                                    (task.internal.toLowerCase().includes(searchTerm) || 
+                                   (task.internal.toLowerCase().includes(searchTerm) || 
                                     (task.external && task.external.toLowerCase().includes(searchTerm)) ||
                                     task.sku.toLowerCase().includes(searchTerm) ||
                                     String(task.bonus).toLowerCase().includes(searchTerm) ||
