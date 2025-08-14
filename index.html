@@ -8,10 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals (Slate, Stone, Sky) with brand accents (Blue, Green, Red, Purple, Orange, Yellow, Pink, Teal, Dark Green) -->
-    <!-- Application Structure Plan: Původní dashboard rozložení s grafem bylo odstraněno na žádost uživatele. Nová struktura je jednodušší, jednolitá. Všechny ovládací prvky (vyhledávání, filtry kategorií) jsou umístěny nahoře nad seznamem úkonů pro snadný přístup. Seznam úkonů je zobrazen v mřížce pod filtry. Tento design zjednodušuje uživatelské rozhraní a zaměřuje se čistě na rychlé filtrování a vyhledávání dat bez doplňkových vizualizací. -->
-    <!-- Visualization & Content Choices: Graf byl odstraněn. Data jsou prezentována výhradně jako karty v mřížce (HTML/Tailwind). Nově byla přidána vizuální distinkce pomocí barev pro všechny kategorie pro rychlejší vizuální identifikaci. Aktivní filtr nyní barevně koresponduje s kategorií. Přidány údaje "Bonus", "Úkony" a seznam "Zařízení" s rozbalovací funkcí. Přidána funkce kopírování SK kódu a popisů po kliknutí. Karty pro některé kategorie jsou zjednodušené. Cíl: Informování a organizace. Interakce: Filtrování, vyhledávání, rozbalování detailů a kopírování (JS). -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -50,6 +46,10 @@
             opacity: 0;
             transition: opacity 0.3s ease;
             pointer-events: none;
+        }
+        /* ===== NOVÝ STYL PRO PLYNULÝ PŘECHOD ===== */
+        #loading-status {
+            transition: opacity 0.4s ease-out;
         }
     </style>
 </head>
@@ -112,8 +112,7 @@
 
         <main>
             <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                 <!-- Loading indicator will be injected here -->
-            </div>
+                </div>
         </main>
     </div>
 
@@ -190,6 +189,39 @@
                 }
                 return data;
             }
+            
+            // ===== NOVÁ POMOCNÁ FUNKCE PRO AKTUALIZACI UKAZATELE NAČÍTÁNÍ (DRY) =====
+            /**
+             * Aktualizuje vizuální stav progress baru a jeho textového popisu.
+             * @param {'start' | 'finish' | 'error'} state - Stav načítání.
+             * @param {string} statusElId - ID elementu pro textový status (např. 'main-data-status').
+             * @param {string} progressElId - ID elementu pro progress bar (např. 'main-data-progress').
+             */
+            function updateProgress(state, statusElId, progressElId) {
+                const statusEl = document.getElementById(statusElId);
+                const progressEl = document.getElementById(progressElId);
+                if (!statusEl || !progressEl) return;
+
+                switch (state) {
+                    case 'start':
+                        statusEl.textContent = 'Načítám...';
+                        progressEl.style.width = '50%';
+                        progressEl.classList.remove('bg-green-500', 'bg-red-500');
+                        progressEl.classList.add('bg-blue-600');
+                        break;
+                    case 'finish':
+                        statusEl.textContent = 'Hotovo ✔';
+                        progressEl.style.width = '100%';
+                        progressEl.classList.replace('bg-blue-600', 'bg-green-500');
+                        break;
+                    case 'error':
+                        statusEl.textContent = 'Chyba ❌';
+                        progressEl.style.width = '100%';
+                        progressEl.classList.replace('bg-blue-600', 'bg-red-500');
+                        break;
+                }
+            }
+
 
             async function fetchAndRender() {
                 const mainSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vROv8zB3q6razPMGZG3EFMK64BAL7Gsu004ogifQi4o757uS1-C1kFOuNJ_aFE0LgpSg6CiF2GyJwwQ/pub?gid=1555777155&single=true&output=csv';
@@ -220,30 +252,20 @@
                         </div>
                     </div>
                 `;
-
-                const mainStatus = document.getElementById('main-data-status');
-                const mainProgress = document.getElementById('main-data-progress');
-                const secondaryStatus = document.getElementById('secondary-data-status');
-                const secondaryProgress = document.getElementById('secondary-data-progress');
-
+                
                 try {
-                    mainStatus.textContent = 'Načítám...';
-                    mainProgress.style.width = '50%';
+                    // ===== POUŽITÍ NOVÉ POMOCNÉ FUNKCE =====
+                    updateProgress('start', 'main-data-status', 'main-data-progress');
                     const mainResponse = await fetch(mainSheetUrl);
-                    if (!mainResponse.ok) throw new Error(`Chyba při načítání hlavní tabulky`);
+                    if (!mainResponse.ok) throw new Error('main');
                     const mainCsvText = await mainResponse.text();
-                    mainProgress.style.width = '100%';
-                    mainStatus.textContent = 'Hotovo ✔';
-                    mainProgress.classList.replace('bg-blue-600', 'bg-green-500');
+                    updateProgress('finish', 'main-data-status', 'main-data-progress');
 
-                    secondaryStatus.textContent = 'Načítám...';
-                    secondaryProgress.style.width = '50%';
+                    updateProgress('start', 'secondary-data-status', 'secondary-data-progress');
                     const secondaryResponse = await fetch(secondarySheetUrl);
-                    if (!secondaryResponse.ok) throw new Error(`Chyba při načítání druhé tabulky`);
+                    if (!secondaryResponse.ok) throw new Error('secondary');
                     const secondaryCsvText = await secondaryResponse.text();
-                    secondaryProgress.style.width = '100%';
-                    secondaryStatus.textContent = 'Hotovo ✔';
-                    secondaryProgress.classList.replace('bg-blue-600', 'bg-green-500');
+                    updateProgress('finish', 'secondary-data-status', 'secondary-data-progress');
                     
                     let mainData = parseMainCSV(mainCsvText);
                     let secondaryData = parseSecondaryCSV(secondaryCsvText);
@@ -252,17 +274,38 @@
                     
                     searchInput.disabled = false;
                     searchInput.placeholder = 'Např. baterie, S0033...';
-
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    
+                    // ===== ZMĚNA: PŘIDÁN PLYNULÝ PŘECHOD (FADE-OUT) =====
+                    const loadingIndicator = document.getElementById('loading-status');
+                    if (loadingIndicator) {
+                        loadingIndicator.style.opacity = '0';
+                        // Počkáme, až se dokončí animace (400ms), a pak vykreslíme karty
+                        await new Promise(resolve => setTimeout(resolve, 400)); 
+                    }
 
                     renderCards();
                     setupFilters();
+
                 } catch (error) {
-                    tasksGrid.innerHTML = `<p class="text-red-500 font-semibold col-span-full text-center">${error.message}</p>`;
+                    // Vylepšené chybové hlášky
+                    if (error.message === 'main') {
+                        updateProgress('error', 'main-data-status', 'main-data-progress');
+                    } else if (error.message === 'secondary') {
+                        updateProgress('error', 'secondary-data-status', 'secondary-data-progress');
+                    }
                     console.error("Nepodařilo se načíst data z Google Sheetu:", error);
+                    // Můžeme přidat i zprávu do hlavního okna po chybě
+                    const loadingStatusEl = document.getElementById('loading-status');
+                    if(loadingStatusEl) {
+                        const errorMsg = document.createElement('p');
+                        errorMsg.className = "text-red-500 font-semibold text-center mt-4";
+                        errorMsg.textContent = "Chyba při načítání dat. Zkuste prosím obnovit stránku."
+                        loadingStatusEl.appendChild(errorMsg);
+                    }
                 }
             }
 
+            // ... zbytek kódu zůstává naprosto stejný ...
 
             function renderCards() {
                 tasksGrid.innerHTML = '';
@@ -270,7 +313,7 @@
 
                 const filteredData = serviceTasksData
                     .filter(task => (activeFilter === 'Vše' || task.category === activeFilter) && 
-                                   (task.internal.toLowerCase().includes(searchTerm) || 
+                                    (task.internal.toLowerCase().includes(searchTerm) || 
                                     (task.external && task.external.toLowerCase().includes(searchTerm)) ||
                                     task.sku.toLowerCase().includes(searchTerm) ||
                                     String(task.bonus).toLowerCase().includes(searchTerm) ||
