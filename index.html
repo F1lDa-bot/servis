@@ -164,8 +164,9 @@
                         mask:     values[7] || ''
                     };
 
-                    // KONTROLA A OBRANA PROTI ŠPATNÝM DATŮM
-                    if (!obj.category || obj.category.length > 50) {
+                    // ===== FINÁLNÍ KONTROLA DAT =====
+                    // Přeskakujeme řádky, které nemají kategorii, mají příliš dlouhou kategorii, NEBO OBSAHUJÍ ČÁRKU.
+                    if (!obj.category || obj.category.length > 40 || obj.category.includes(',')) {
                         console.warn('Přeskakuji neplatný řádek v hlavní tabulce:', line);
                         continue;
                     }
@@ -191,8 +192,9 @@
                             mask:     ''
                         };
 
-                        // KONTROLA A OBRANA PROTI ŠPATNÝM DATŮM
-                        if (!obj.category || obj.category.length > 50) {
+                        // ===== FINÁLNÍ KONTROLA DAT =====
+                        // Stejná zpřísněná kontrola jako u první funkce.
+                        if (!obj.category || obj.category.length > 40 || obj.category.includes(',')) {
                             console.warn('Přeskakuji neplatný řádek ve druhé tabulce:', lines.slice(i, i+3).join(' | '));
                             continue;
                         }
