@@ -147,37 +147,7 @@
             let activeFilter = 'Vše';
             let dailyTasks = [];
 
-            const localControllersData = [
-                { sku: 'P77777', category: 'Ovladače', internal: 'DualSense Wireless Controller bílý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77778', category: 'Ovladače', internal: 'DualSense Wireless Controller mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77779', category: 'Ovladače', internal: 'Sony DualShock 4 Controller Black V2', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77780', category: 'Ovladače', internal: 'Sony DualShock 4 Controller V2 mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77784', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair neonově červený/neonově modrý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77785', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77786', category: 'Ovladače', internal: 'Nintendo Switch Pro Controller ovladač mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77787', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77788', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77789', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77790', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77791', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77792', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }
-            ];
-
-            const localBuyoutDescriptionsData = [
-                { sku: 'Konzole', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'Android', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'iPhone', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nRozbitý/neoriginální displej: N\nStav zařízení: Y\nJe LCD originální: Y\nDiagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'iPad', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\nJe LCD originální: Y\nDiagnostiky: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'Apple Watch', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nJe LCD originální: Y\nDiagnostiky: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'Apple Pencil/Magic Mouse', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nFunkční test: OK\nStav zařízení: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'MacBook', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nDiagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'iMac, Mac mini, Mac Studio', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nDiagnostiky: FT OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'DEMO', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK/ funkční testy\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'ZAPU', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'VRATKA', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-            ];
-
-            function parseCSV(csvText) {
+            function parseCSV(csvText, hasFullData) {
                 const lines = csvText.trim().split(/\r\n|\n/);
                 const data = [];
                 const regex = /("([^"]|"")*"|[^,]*)(,|$)/g;
@@ -198,33 +168,55 @@
                         if (match[3] === '') break;
                     }
 
-                    const obj = {
-                        sku:      values[0] || '',
-                        category: values[1] || '',
-                        internal: values[2] || '',
-                        external: values[3] || '',
-                        bonus:    values[4] || '0',
-                        ukony:    values[5] || '0',
-                        devices:  values[6] || '',
-                        mask:     values[7] || ''
-                    };
+                    let obj;
+                    if(hasFullData) {
+                        obj = {
+                            sku:      values[0] || '',
+                            category: values[1] || '',
+                            internal: values[2] || '',
+                            external: values[3] || '',
+                            bonus:    values[4] || '0',
+                            ukony:    values[5] || '0',
+                            devices:  values[6] || '',
+                            mask:     values[7] || ''
+                        };
+                    } else {
+                        obj = {
+                            sku:      values[0] || '',
+                            category: values[1] || '',
+                            internal: values[2] || '',
+                            external: '',
+                            bonus:    '0',
+                            ukony:    '0',
+                            devices:  '',
+                            mask:     ''
+                        };
+                    }
                     data.push(obj);
                 }
                 return data;
             }
 
             async function fetchAndRender() {
-                const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vROv8zB3q6razPMGZG3EFMK64BAL7Gsu004ogifQi4o757uS1-C1kFOuNJ_aFE0LgpSg6CiF2GyJwwQ/pub?gid=1555777155&single=true&output=csv';
+                const mainSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRkcl4elSIq_DeO9ohJmjdr5bU4JN8hWrw7KQOMwzwo3W8Ge8XmFWHmcKTYXK3dFcuPDOQQz9sCEWc2/pub?gid=1520044807&single=true&output=csv';
+                const secondarySheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTAslRCf5yTU5m5NruxIi-efp3y6iul8MUGPGFAXSGFK8YnquYjX_ODWNDeHWbcAD-jTyu9mO3BKan-/pub?gid=0&single=true&output=csv';
                 
                 try {
-                    const response = await fetch(sheetUrl);
-                    if (!response.ok) {
-                        throw new Error(`Chyba při načítání dat: ${response.statusText}`);
-                    }
-                    const csvText = await response.text();
-                    let fetchedData = parseCSV(csvText);
+                    const [mainResponse, secondaryResponse] = await Promise.all([
+                        fetch(mainSheetUrl),
+                        fetch(secondarySheetUrl)
+                    ]);
+
+                    if (!mainResponse.ok) throw new Error(`Chyba při načítání hlavní tabulky: ${mainResponse.statusText}`);
+                    if (!secondaryResponse.ok) throw new Error(`Chyba při načítání druhé tabulky: ${secondaryResponse.statusText}`);
+
+                    const mainCsvText = await mainResponse.text();
+                    const secondaryCsvText = await secondaryResponse.text();
                     
-                    serviceTasksData = fetchedData.concat(localControllersData, localBuyoutDescriptionsData);
+                    let mainData = parseCSV(mainCsvText, true);
+                    let secondaryData = parseCSV(secondaryCsvText, false);
+                    
+                    serviceTasksData = mainData.concat(secondaryData);
                     
                     searchInput.disabled = false;
                     searchInput.placeholder = 'Např. baterie, S0033...';
