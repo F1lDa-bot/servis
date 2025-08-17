@@ -88,7 +88,7 @@
                 <!-- Hlavní mřížka s kartami úkonů -->
                 <main>
                     <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                         <!-- Karty úkonů se vykreslí zde -->
+                         <!-- Karty úkonů se vykreslí zde (nebo ukazatel načítání) -->
                     </div>
                 </main>
             </div>
@@ -183,10 +183,8 @@
                 { sku: 'VRATKA', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
             ];
             
-            // NOVINKA: Dynamické datum pro popisky výkupů
             const todayString = new Date().toLocaleDateString('cs-CZ');
             localBuyoutDescriptionsData.forEach(item => {
-                // Nahradí pevně dané datum aktuálním datem
                 item.internal = item.internal.replace('19.7.2025', todayString);
             });
 
@@ -248,27 +246,52 @@
 
             async function fetchAndRender() {
                 const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vROv8zB3q6razPMGZG3EFMK64BAL7Gsu004ogifQi4o757uS1-C1kFOuNJ_aFE0LgpSg6CiF2GyJwwQ/pub?gid=1555777155&single=true&output=csv';
+                
+                // NOVINKA: Vylepšený ukazatel načítání
                 tasksGrid.innerHTML = `
-                    <div class="col-span-full text-center p-8 bg-white rounded-lg shadow-md">
-                        <h3 class="text-lg font-semibold text-slate-800">Načítám data...</h3>
+                    <div id="loading-status" class="md:col-span-2 text-center p-8 bg-white rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold mb-6 text-slate-800">Načítám data aplikace...</h3>
+                        <div class="space-y-4 max-w-md mx-auto">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-base font-medium text-slate-700">Načítání dat skladových karet z databáze</span>
+                                    <span id="main-data-status" class="text-sm font-medium text-slate-500">Čekám...</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div id="main-data-progress" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>`;
+
+                const mainStatus = document.getElementById('main-data-status');
+                const mainProgress = document.getElementById('main-data-progress');
+
                 try {
+                    mainStatus.textContent = 'Načítám...';
+                    mainProgress.style.width = '50%';
                     const response = await fetch(sheetUrl);
                     if (!response.ok) throw new Error(`Chyba při načítání dat: ${response.statusText}`);
-                    const csvText = await response.text();
-                    let fetchedData = parseCSV(csvText);
                     
+                    const csvText = await response.text();
+                    mainProgress.style.width = '100%';
+                    mainStatus.textContent = 'Hotovo ✔';
+                    mainProgress.classList.replace('bg-blue-600', 'bg-green-500');
+
+                    let fetchedData = parseCSV(csvText);
                     serviceTasksData = fetchedData.concat(localControllersData, localBuyoutDescriptionsData);
                     
                     searchInput.disabled = false;
                     searchInput.placeholder = 'Např. baterie, S0033...';
+                    
+                    await new Promise(resolve => setTimeout(resolve, 500)); // Krátká pauza, aby uživatel viděl "Hotovo"
 
                     setupFilters();
                     loadDailyTasks();
                     updateCalculatorUI();
                     renderCards();
                 } catch (error) {
-                    tasksGrid.innerHTML = `<p class="text-red-500 font-semibold col-span-full text-center">${error.message}</p>`;
+                    tasksGrid.innerHTML = `<p class="text-red-500 font-semibold md:col-span-2 text-center p-8">${error.message}</p>`;
                     console.error("Nepodařilo se načíst data z Google Sheetu:", error);
                 }
             }
@@ -287,7 +310,7 @@
                 );
 
                 if (filteredData.length === 0) {
-                    tasksGrid.innerHTML = `<p class="text-slate-500 col-span-full text-center">Nebyly nalezeny žádné úkony pro zadaná kritéria.</p>`;
+                    tasksGrid.innerHTML = `<p class="text-slate-500 md:col-span-2 text-center p-8">Nebyly nalezeny žádné úkony pro zadaná kritéria.</p>`;
                     return;
                 }
 
