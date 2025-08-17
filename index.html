@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interaktivní přehled servisních úkonů</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -153,7 +153,7 @@
             let dailyTasks = [];
             let categoryColorMap = {};
 
-            // Lokální data (beze změny)
+            // Lokální data
             const localControllersData = [
                 { sku: 'P77777', category: 'Ovladače', internal: 'DualSense Wireless Controller bílý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
                 { sku: 'P77778', category: 'Ovladače', internal: 'DualSense Wireless Controller mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
@@ -183,6 +183,13 @@
                 { sku: 'VRATKA', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
             ];
             
+            // NOVINKA: Dynamické datum pro popisky výkupů
+            const todayString = new Date().toLocaleDateString('cs-CZ');
+            localBuyoutDescriptionsData.forEach(item => {
+                // Nahradí pevně dané datum aktuálním datem
+                item.internal = item.internal.replace('19.7.2025', todayString);
+            });
+
             const colorPalette = [
                 { bg: 'bg-sky-100', text: 'text-sky-800', filter: 'bg-sky-600' },
                 { bg: 'bg-emerald-100', text: 'text-emerald-800', filter: 'bg-emerald-600' },
