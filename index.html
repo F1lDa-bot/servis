@@ -2,16 +2,12 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>Interaktivní přehled servisních úkonů</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Warm Neutrals (Slate, Stone, Sky) with brand accents (Blue, Green, Red, Purple, Orange, Yellow, Pink, Teal, Dark Green) -->
-    <!-- Application Structure Plan: Původní dashboard rozložení s grafem bylo odstraněno na žádost uživatele. Nová struktura je jednodušší, jednolitá. Všechny ovládací prvky (vyhledávání, filtry kategorií) jsou umístěny nahoře nad seznamem úkonů pro snadný přístup. Seznam úkonů je zobrazen v mřížce pod filtry. Tento design zjednodušuje uživatelské rozhraní a zaměřuje se čistě na rychlé filtrování a vyhledávání dat bez doplňkových vizualizací. -->
-    <!-- Visualization & Content Choices: Graf byl odstraněn. Data jsou prezentována výhradně jako karty v mřížce (HTML/Tailwind). Nově byla přidána vizuální distinkce pomocí barev pro všechny kategorie pro rychlejší vizuální identifikaci. Aktivní filtr nyní barevně koresponduje s kategorií. Přidány údaje "Bonus", "Úkony" a seznam "Zařízení" s rozbalovací funkcí. Přidána funkce kopírování SK kódu a popisů po kliknutí. Karty pro některé kategorie jsou zjednodušené. Cíl: Informování a organizace. Interakce: Filtrování, vyhledávání, rozbalování detailů a kopírování (JS). -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -51,6 +47,13 @@
             transition: opacity 0.3s ease;
             pointer-events: none;
         }
+        /* Pro přilepení kalkulačky na větších obrazovkách */
+        @media (min-width: 1024px) {
+            .sticky-calculator {
+                position: sticky;
+                top: 2rem; /* 32px */
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -61,68 +64,82 @@
             <p class="mt-2 text-lg text-slate-600">Interaktivní nástroj pro rychlé vyhledávání standardizovaných popisů oprav a SK kódů.</p>
         </header>
 
-        <div id="calculator-section" class="bg-white p-6 rounded-xl shadow-sm mb-8">
-            <h2 class="text-xl font-bold text-slate-800 mb-4">Denní kalkulačka</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="md:col-span-2">
-                    <div class="flex items-center space-x-6 mb-4">
-                        <div>
-                            <p class="text-sm text-slate-500">Celkový bonus</p>
-                            <p id="total-bonus" class="text-2xl font-bold text-emerald-600">0</p>
+        <!-- NOVÉ DVOU-SLOUPCOVÉ ROZLOŽENÍ -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- LEVÝ SLOUPEC: Filtry a seznam úkonů -->
+            <div class="lg:col-span-2">
+                <!-- Sekce filtrů a vyhledávání -->
+                <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="md:col-span-1">
+                            <label for="search" class="block text-sm font-medium text-slate-700 mb-2">Vyhledat úkon (popis, SK...):</label>
+                            <input type="text" id="search" placeholder="Načítám data..." class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500" disabled>
                         </div>
-                        <div>
-                            <p class="text-sm text-slate-500">Celkem úkonů</p>
-                            <p id="total-ukony" class="text-2xl font-bold text-sky-600">0</p>
-                        </div>
-                    </div>
-                    <div>
-                        <p class="text-sm text-slate-500 mb-1">Pokrok denního cíle (7 úkonů)</p>
-                        <div class="w-full bg-slate-200 rounded-full h-4">
-                            <div id="progress-bar" class="bg-sky-500 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        <div class="md:col-span-2">
+                            <h3 class="text-sm font-medium text-slate-700 mb-2">Filtrovat podle kategorie:</h3>
+                            <div id="filter-buttons" class="flex flex-wrap gap-2">
+                                 <span class="text-slate-500">Načítám...</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="md:col-span-1">
-                    <h3 class="text-md font-semibold text-slate-700 mb-2">Přidané úkony:</h3>
-                    <div id="calculator-list" class="max-h-48 overflow-y-auto space-y-2 pr-2">
-                        <p class="text-slate-400 text-sm">Zatím žádné úkony.</p>
+
+                <!-- Hlavní mřížka s kartami úkonů -->
+                <main>
+                    <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <!-- Karty úkonů se vykreslí zde -->
                     </div>
-                    <div class="flex space-x-2 mt-4">
-                        <button id="export-btn" class="w-full bg-slate-600 text-white px-4 py-2 rounded-md hover:bg-slate-700 transition-colors text-sm">Exportovat</button>
-                        <button id="reset-btn" class="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors text-sm">Resetovat</button>
+                </main>
+            </div>
+
+            <!-- PRAVÝ SLOUPEC: Kalkulačka -->
+            <div class="lg:col-span-1">
+                <div id="calculator-section" class="bg-white p-6 rounded-xl shadow-sm sticky-calculator">
+                    <h2 class="text-xl font-bold text-slate-800 mb-4">Denní kalkulačka</h2>
+                    <div class="flex flex-col">
+                        <div class="mb-6">
+                            <div class="flex items-center space-x-6 mb-4">
+                                <div>
+                                    <p class="text-sm text-slate-500">Celkový bonus</p>
+                                    <p id="total-bonus" class="text-2xl font-bold text-emerald-600">0</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-slate-500">Celkem úkonů</p>
+                                    <p id="total-ukony" class="text-2xl font-bold text-sky-600">0</p>
+                                </div>
+                            </div>
+                            <div>
+                                <p class="text-sm text-slate-500 mb-1">Pokrok denního cíle (7 úkonů)</p>
+                                <div class="w-full bg-slate-200 rounded-full h-4">
+                                    <div id="progress-bar" class="bg-sky-500 h-4 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-md font-semibold text-slate-700 mb-2">Přidané úkony:</h3>
+                            <div id="calculator-list" class="max-h-48 overflow-y-auto space-y-2 pr-2">
+                                <p class="text-slate-400 text-sm">Zatím žádné úkony.</p>
+                            </div>
+                            <div class="flex space-x-2 mt-4">
+                                <button id="export-btn" class="w-full bg-slate-600 text-white px-4 py-2 rounded-md hover:bg-slate-700 transition-colors text-sm">Exportovat</button>
+                                <button id="reset-btn" class="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors text-sm">Resetovat</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="md:col-span-1">
-                    <label for="search" class="block text-sm font-medium text-slate-700 mb-2">Vyhledat úkon (popis, SK, bonus...):</label>
-                    <input type="text" id="search" placeholder="Načítám data..." class="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500" disabled>
-                </div>
-                <div class="md:col-span-2">
-                    <h3 class="text-sm font-medium text-slate-700 mb-2">Filtrovat podle kategorie:</h3>
-                    <div id="filter-buttons" class="flex flex-wrap gap-2">
-                         <span class="text-slate-500">Načítám...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <main>
-            <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                 <!-- Loading indicator will be injected here -->
-            </div>
-        </main>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Elementy na stránce
             const tasksGrid = document.getElementById('tasks-grid');
             const filterButtonsContainer = document.getElementById('filter-buttons');
             const searchInput = document.getElementById('search');
             
+            // Elementy kalkulačky
             const totalBonusEl = document.getElementById('total-bonus');
             const totalUkonyEl = document.getElementById('total-ukony');
             const progressBarEl = document.getElementById('progress-bar');
@@ -130,10 +147,13 @@
             const exportBtn = document.getElementById('export-btn');
             const resetBtn = document.getElementById('reset-btn');
 
+            // Stavové proměnné
             let serviceTasksData = [];
             let activeFilter = 'Vše';
             let dailyTasks = [];
+            let categoryColorMap = {};
 
+            // Lokální data (beze změny)
             const localControllersData = [
                 { sku: 'P77777', category: 'Ovladače', internal: 'DualSense Wireless Controller bílý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
                 { sku: 'P77778', category: 'Ovladače', internal: 'DualSense Wireless Controller mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
@@ -149,7 +169,6 @@
                 { sku: 'P77791', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
                 { sku: 'P77792', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }
             ];
-
             const localBuyoutDescriptionsData = [
                 { sku: 'Konzole', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
                 { sku: 'Android', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
@@ -163,16 +182,37 @@
                 { sku: 'ZAPU', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
                 { sku: 'VRATKA', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
             ];
+            
+            const colorPalette = [
+                { bg: 'bg-sky-100', text: 'text-sky-800', filter: 'bg-sky-600' },
+                { bg: 'bg-emerald-100', text: 'text-emerald-800', filter: 'bg-emerald-600' },
+                { bg: 'bg-red-100', text: 'text-red-800', filter: 'bg-red-600' },
+                { bg: 'bg-purple-100', text: 'text-purple-800', filter: 'bg-purple-600' },
+                { bg: 'bg-orange-100', text: 'text-orange-800', filter: 'bg-orange-600' },
+                { bg: 'bg-yellow-100', text: 'text-yellow-800', filter: 'bg-yellow-600' },
+                { bg: 'bg-pink-100', text: 'text-pink-800', filter: 'bg-pink-600' },
+                { bg: 'bg-teal-100', text: 'text-teal-800', filter: 'bg-teal-600' },
+                { bg: 'bg-indigo-100', text: 'text-indigo-800', filter: 'bg-indigo-600' },
+            ];
+
+            function saveDailyTasks() {
+                localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks));
+            }
+
+            function loadDailyTasks() {
+                const savedTasks = localStorage.getItem('dailyTasks');
+                if (savedTasks) {
+                    dailyTasks = JSON.parse(savedTasks);
+                }
+            }
 
             function parseCSV(csvText) {
                 const lines = csvText.trim().split(/\r\n|\n/);
                 const data = [];
                 const regex = /("([^"]|"")*"|[^,]*)(,|$)/g;
-
                 for (let i = 1; i < lines.length; i++) {
                     const line = lines[i];
                     if (!line.trim()) continue;
-
                     let values = [];
                     let match;
                     regex.lastIndex = 0;
@@ -184,7 +224,6 @@
                         values.push(value.trim());
                         if (match[3] === '') break;
                     }
-
                     const obj = {
                         sku:      values[0] || '',
                         category: values[1] || '',
@@ -202,112 +241,73 @@
 
             async function fetchAndRender() {
                 const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vROv8zB3q6razPMGZG3EFMK64BAL7Gsu004ogifQi4o757uS1-C1kFOuNJ_aFE0LgpSg6CiF2GyJwwQ/pub?gid=1555777155&single=true&output=csv';
-                
                 tasksGrid.innerHTML = `
-                    <div id="loading-status" class="col-span-full text-center p-8 bg-white rounded-lg shadow-md">
-                        <h3 class="text-lg font-semibold mb-6 text-slate-800">Načítám data aplikace...</h3>
-                        <div class="space-y-4 max-w-md mx-auto">
-                            <div>
-                                <div class="flex justify-between mb-1">
-                                    <span class="text-base font-medium text-slate-700">Hlavní servisní úkony</span>
-                                    <span id="main-data-status" class="text-sm font-medium text-slate-500">Čekám...</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                    <div id="main-data-progress" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                const mainStatus = document.getElementById('main-data-status');
-                const mainProgress = document.getElementById('main-data-progress');
-
+                    <div class="col-span-full text-center p-8 bg-white rounded-lg shadow-md">
+                        <h3 class="text-lg font-semibold text-slate-800">Načítám data...</h3>
+                    </div>`;
                 try {
-                    mainStatus.textContent = 'Načítám...';
-                    mainProgress.style.width = '50%';
                     const response = await fetch(sheetUrl);
-                    if (!response.ok) {
-                        throw new Error(`Chyba při načítání dat: ${response.statusText}`);
-                    }
+                    if (!response.ok) throw new Error(`Chyba při načítání dat: ${response.statusText}`);
                     const csvText = await response.text();
                     let fetchedData = parseCSV(csvText);
-                    
-                    mainProgress.style.width = '100%';
-                    mainStatus.textContent = 'Hotovo ✔';
-                    mainProgress.classList.replace('bg-blue-600', 'bg-green-500');
                     
                     serviceTasksData = fetchedData.concat(localControllersData, localBuyoutDescriptionsData);
                     
                     searchInput.disabled = false;
                     searchInput.placeholder = 'Např. baterie, S0033...';
 
-                    await new Promise(resolve => setTimeout(resolve, 500));
-
-                    renderCards();
                     setupFilters();
+                    loadDailyTasks();
+                    updateCalculatorUI();
+                    renderCards();
                 } catch (error) {
                     tasksGrid.innerHTML = `<p class="text-red-500 font-semibold col-span-full text-center">${error.message}</p>`;
                     console.error("Nepodařilo se načíst data z Google Sheetu:", error);
                 }
             }
 
-
             function renderCards() {
                 tasksGrid.innerHTML = '';
                 const searchTerm = searchInput.value.toLowerCase();
-
-                const filteredData = serviceTasksData
-                    .filter(task => (activeFilter === 'Vše' || task.category === activeFilter) && 
-                                   (task.internal.toLowerCase().includes(searchTerm) || 
-                                    (task.external && task.external.toLowerCase().includes(searchTerm)) ||
-                                    task.sku.toLowerCase().includes(searchTerm) ||
-                                    String(task.bonus).toLowerCase().includes(searchTerm) ||
-                                    String(task.ukony).toLowerCase().includes(searchTerm) ||
-                                    task.devices.toLowerCase().includes(searchTerm)));
+                const filteredData = serviceTasksData.filter(task => 
+                    (activeFilter === 'Vše' || task.category === activeFilter) && 
+                    (task.internal.toLowerCase().includes(searchTerm) || 
+                     (task.external && task.external.toLowerCase().includes(searchTerm)) ||
+                     task.sku.toLowerCase().includes(searchTerm) ||
+                     String(task.bonus).toLowerCase().includes(searchTerm) ||
+                     String(task.ukony).toLowerCase().includes(searchTerm) ||
+                     task.devices.toLowerCase().includes(searchTerm))
+                );
 
                 if (filteredData.length === 0) {
                     tasksGrid.innerHTML = `<p class="text-slate-500 col-span-full text-center">Nebyly nalezeny žádné úkony pro zadaná kritéria.</p>`;
                     return;
                 }
 
-                const uniqueCategories = [...new Set(serviceTasksData.map(t => t.category))];
-                const colorMap = ['blue', 'green', 'red', 'purple', 'orange', 'yellow', 'pink', 'teal', 'emerald', 'indigo', 'cyan', 'lime', 'gray'];
-
-                filteredData.forEach((task, index) => {
+                filteredData.forEach((task) => {
                     const card = document.createElement('div');
                     card.className = 'task-card bg-white p-5 rounded-lg shadow-md border border-slate-200 flex flex-col';
                     card.dataset.category = task.category;
 
-                    const categoryIndex = uniqueCategories.indexOf(task.category);
-                    const color = colorMap[categoryIndex % colorMap.length];
+                    const colorClasses = categoryColorMap[task.category] || colorPalette[0];
                     
-                    const categoryBgClass = `bg-${color}-100`;
-                    const categoryTextClass = `text-${color}-800`;
-
                     let cardContent = '';
-
                     if (task.category === 'Ovladače' || task.category === 'Interní popisek výkupů') {
-                        let title = 'Informace:';
-                        if (task.category === 'Ovladače') title = 'Název ovladače:';
-                        if (task.category === 'Interní popisek výkupů') title = `${task.sku}:`;
-
+                        let title = task.category === 'Ovladače' ? 'Název ovladače:' : `${task.sku}:`;
                         cardContent = `
                             <div class="flex justify-between items-center mb-3">
-                                <span class="inline-block ${categoryBgClass} ${categoryTextClass} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
+                                <span class="inline-block ${colorClasses.bg} ${colorClasses.text} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
                                 ${task.sku !== 'PLACEHOLDER' && task.category !== 'Interní popisek výkupů' ? 
                                 `<div class="relative">
                                     <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
                                     <div class="copy-feedback">Zkopírováno!</div>
-                                </div>` : ''
-                                }
+                                </div>` : ''}
                             </div>
                             <div class="relative">
                                 <h4 class="font-semibold text-slate-800 text-sm mb-1">${title}</h4>
                                 <p class="description-item text-sm text-slate-600 whitespace-pre-wrap cursor-pointer hover:bg-slate-100 p-1 rounded">${task.internal}</p>
                                 <div class="description-copy-feedback">Popis zkopírován!</div>
-                            </div>
-                        `;
+                            </div>`;
                     } else {
                         let devicesHtml = '';
                         if (task.devices && task.devices.trim() !== '') {
@@ -318,93 +318,88 @@
                                     <div class="flex flex-wrap gap-2">
                                         ${deviceList.map(d => `<span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-md">${d}</span>`).join('')}
                                     </div>
-                                </div>
-                            `;
+                                </div>`;
                         }
                         
                         const addToCalcBtn = `
-                            <div class="mt-4 pt-4 border-t border-slate-200">
+                            <div class="mt-auto pt-4">
                                 <button class="add-to-calc-btn w-full bg-sky-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-sky-600 transition-colors" data-sku="${task.sku}">
                                     Přidat do kalkulačky
                                 </button>
-                            </div>
-                        `;
+                            </div>`;
 
                         cardContent = `
-                            <div class="flex-grow">
-                                <div class="flex justify-between items-start mb-3 gap-2">
-                                    <span class="inline-block ${categoryBgClass} ${categoryTextClass} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
-                                    <div class="flex items-center gap-2 flex-wrap justify-end relative">
-                                        <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2 py-1 rounded">Bonus: ${task.bonus}</span>
-                                        <span class="text-xs font-mono bg-cyan-100 text-cyan-800 px-2 py-1 rounded">Úkony: ${task.ukony}</span>
-                                        <span class="text-xs font-mono bg-orange-100 text-orange-800 px-2 py-1 rounded">Maska: ${task.mask}</span>
-                                        <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
-                                        <div class="copy-feedback">Zkopírováno!</div>
+                            <div class="flex-grow flex flex-col">
+                                <div class="flex-grow">
+                                    <div class="flex justify-between items-start mb-3 gap-2">
+                                        <span class="inline-block ${colorClasses.bg} ${colorClasses.text} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
+                                        <div class="flex items-center gap-2 flex-wrap justify-end relative">
+                                            <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2 py-1 rounded">Bonus: ${task.bonus}</span>
+                                            <span class="text-xs font-mono bg-cyan-100 text-cyan-800 px-2 py-1 rounded">Úkony: ${task.ukony}</span>
+                                            <span class="text-xs font-mono bg-orange-100 text-orange-800 px-2 py-1 rounded">Maska: ${task.mask}</span>
+                                            <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
+                                            <div class="copy-feedback">Zkopírováno!</div>
+                                        </div>
                                     </div>
+                                    <div>
+                                        <h4 class="font-semibold text-slate-800 text-sm mb-1">Interní popis:</h4>
+                                        <p class="text-sm text-slate-600 mb-3">${task.internal}</p>
+                                    </div>
+                                    ${task.external ? `
+                                    <div class="pt-3 border-t border-slate-200">
+                                        <h4 class="font-semibold text-slate-800 text-sm mb-1">Popis opravy:</h4>
+                                        <div class="relative">
+                                            <p class="description-item text-sm text-slate-900 font-medium cursor-pointer hover:bg-slate-100 p-1 rounded">${task.external}</p>
+                                            <div class="description-copy-feedback">Popis zkopírován!</div>
+                                        </div>
+                                    </div>` : ''}
+                                    ${devicesHtml}
                                 </div>
-                                <div>
-                                    <h4 class="font-semibold text-slate-800 text-sm mb-1">Interní popis:</h4>
-                                    <p class="text-sm text-slate-600 mb-3">${task.internal}</p>
-                                </div>
-                                ${task.external ? `
-                                <div class="pt-3 border-t border-slate-200">
-                                    <h4 class="font-semibold text-slate-800 text-sm mb-1">Popis opravy:</h4>
-                                    <p class="description-item text-sm text-slate-900 font-medium cursor-pointer hover:bg-slate-100 p-1 rounded">${task.external}</p>
-                                    <div class="description-copy-feedback">Popis zkopírován!</div>
-                                </div>
-                                ` : ''}
-                                ${devicesHtml}
-                            </div>
-                            ${addToCalcBtn}
-                        `;
+                                ${addToCalcBtn}
+                            </div>`;
                     }
-                    
                     card.innerHTML = cardContent;
                     tasksGrid.appendChild(card);
                 });
             }
             
-            function getActiveButtonClasses(category, colorMap, uniqueCategories) {
-                if (category === 'Vše') {
-                    return ['bg-sky-600', 'text-white', 'font-semibold'];
-                }
-                const categoryIndex = uniqueCategories.indexOf(category);
-                const color = colorMap[categoryIndex % colorMap.length];
-                return [`bg-${color}-600`, 'text-white', 'font-semibold'];
-            }
-
             function setupFilters() {
                 const uniqueCategories = [...new Set(serviceTasksData.map(task => task.category))];
-                const colorMap = ['blue', 'green', 'red', 'purple', 'orange', 'yellow', 'pink', 'teal', 'emerald', 'indigo', 'cyan', 'lime', 'gray'];
+                
+                uniqueCategories.forEach((category, index) => {
+                    categoryColorMap[category] = colorPalette[index % colorPalette.length];
+                });
+
                 const buttons = ['Vše', ...uniqueCategories];
                 const inactiveClasses = ['bg-slate-200', 'hover:bg-slate-300', 'text-slate-700'];
 
+                const getActiveButtonClasses = (category) => {
+                    if (category === 'Vše') return ['bg-sky-600', 'text-white', 'font-semibold'];
+                    const color = categoryColorMap[category];
+                    return [color.filter, 'text-white', 'font-semibold'];
+                };
+
                 filterButtonsContainer.innerHTML = buttons.map(category => {
                     const isActive = category === 'Vše';
-                    const activeClasses = getActiveButtonClasses(category, colorMap, uniqueCategories);
-                    const buttonClasses = isActive ? activeClasses.join(' ') : inactiveClasses.join(' ');
-                    const activeAttr = isActive ? 'data-active="true"' : '';
-                    return `<button class="filter-btn px-3 py-1.5 text-sm rounded-md transition-colors duration-200 ${buttonClasses}" data-category="${category}" ${activeAttr}>${category}</button>`;
+                    const buttonClasses = isActive ? getActiveButtonClasses(category).join(' ') : inactiveClasses.join(' ');
+                    return `<button class="filter-btn px-3 py-1.5 text-sm rounded-md transition-colors duration-200 ${buttonClasses}" data-category="${category}">${category}</button>`;
                 }).join('');
 
                 filterButtonsContainer.addEventListener('click', (e) => {
                     const targetButton = e.target.closest('.filter-btn');
                     if (!targetButton) return;
 
-                    const currentActiveButton = filterButtonsContainer.querySelector('[data-active="true"]');
-                    if (currentActiveButton) {
-                        const oldCategory = currentActiveButton.dataset.category;
-                        currentActiveButton.classList.remove(...getActiveButtonClasses(oldCategory, colorMap, uniqueCategories));
-                        currentActiveButton.classList.add(...inactiveClasses);
-                        currentActiveButton.removeAttribute('data-active');
-                    }
+                    filterButtonsContainer.querySelectorAll('.filter-btn').forEach(btn => {
+                        btn.classList.remove(...getActiveButtonClasses(btn.dataset.category));
+                        btn.classList.add(...inactiveClasses);
+                    });
                     
                     const newCategory = targetButton.dataset.category;
                     targetButton.classList.remove(...inactiveClasses);
-                    targetButton.classList.add(...getActiveButtonClasses(newCategory, colorMap, uniqueCategories));
-                    targetButton.setAttribute('data-active', 'true');
+                    targetButton.classList.add(...getActiveButtonClasses(newCategory));
                     activeFilter = newCategory;
 
+                    searchInput.value = '';
                     renderCards();
                 });
             }
@@ -412,7 +407,6 @@
             function updateCalculatorUI() {
                 let totalBonus = 0;
                 let totalUkony = 0;
-
                 dailyTasks.forEach(task => {
                     totalBonus += parseFloat(task.bonus) || 0;
                     totalUkony += parseFloat(task.ukony) || 0;
@@ -424,25 +418,19 @@
                 const dailyGoal = 7;
                 const progress = Math.min((totalUkony / dailyGoal) * 100, 100);
                 progressBarEl.style.width = `${progress}%`;
-                
-                if (totalUkony >= dailyGoal) {
-                    progressBarEl.classList.remove('bg-sky-500');
-                    progressBarEl.classList.add('bg-emerald-500');
-                } else {
-                    progressBarEl.classList.remove('bg-emerald-500');
-                    progressBarEl.classList.add('bg-sky-500');
-                }
+                progressBarEl.classList.toggle('bg-emerald-500', totalUkony >= dailyGoal);
+                progressBarEl.classList.toggle('bg-sky-500', totalUkony < dailyGoal);
 
                 if (dailyTasks.length === 0) {
                     calculatorListEl.innerHTML = `<p class="text-slate-400 text-sm">Zatím žádné úkony.</p>`;
                 } else {
                     calculatorListEl.innerHTML = dailyTasks.map((task, index) => `
                         <div class="flex justify-between items-center text-sm p-1 hover:bg-slate-100 rounded">
-                            <span class="truncate pr-2">${task.sku} - ${task.internal}</span>
+                            <span class="truncate pr-2" title="${task.sku} - ${task.internal}">${task.sku} - ${task.internal}</span>
                             <button class="remove-from-calc-btn text-red-500 hover:text-red-700 font-bold px-1" data-index="${index}">&times;</button>
-                        </div>
-                    `).join('');
+                        </div>`).join('');
                 }
+                saveDailyTasks();
             }
 
             tasksGrid.addEventListener('click', (e) => {
@@ -450,32 +438,36 @@
                     navigator.clipboard.writeText(textToCopy).then(() => {
                         if(feedbackElement) {
                             feedbackElement.style.opacity = '1';
-                            setTimeout(() => {
-                               feedbackElement.style.opacity = '0';
-                            }, 1500);
+                            setTimeout(() => { feedbackElement.style.opacity = '0'; }, 1500);
                         }
-                    }).catch(err => {
-                        console.error('Nepodařilo se zkopírovat:', err);
-                    });
+                    }).catch(err => console.error('Nepodařilo se zkopírovat:', err));
                 };
 
                 const skuItem = e.target.closest('.sku-item');
-                if (skuItem) {
-                    copyAndShowFeedback(skuItem.dataset.sku, skuItem.nextElementSibling);
-                }
+                if (skuItem) copyAndShowFeedback(skuItem.dataset.sku, skuItem.nextElementSibling);
 
                 const descriptionItem = e.target.closest('.description-item');
-                if (descriptionItem) {
-                     copyAndShowFeedback(descriptionItem.innerText, descriptionItem.nextElementSibling);
-                }
+                if (descriptionItem) copyAndShowFeedback(descriptionItem.innerText, descriptionItem.parentElement.querySelector('.description-copy-feedback'));
 
                 const addToCalcBtn = e.target.closest('.add-to-calc-btn');
-                if (addToCalcBtn) {
+                if (addToCalcBtn && !addToCalcBtn.disabled) {
                     const sku = addToCalcBtn.dataset.sku;
                     const taskToAdd = serviceTasksData.find(t => t.sku === sku);
                     if (taskToAdd) {
                         dailyTasks.push(taskToAdd);
                         updateCalculatorUI();
+
+                        const originalText = addToCalcBtn.innerHTML;
+                        addToCalcBtn.innerHTML = 'Přidáno ✓';
+                        addToCalcBtn.classList.replace('bg-sky-500', 'bg-emerald-500');
+                        addToCalcBtn.classList.replace('hover:bg-sky-600', 'hover:bg-emerald-500');
+                        addToCalcBtn.disabled = true;
+                        setTimeout(() => {
+                            addToCalcBtn.innerHTML = originalText;
+                            addToCalcBtn.classList.replace('bg-emerald-500', 'bg-sky-500');
+                            addToCalcBtn.classList.replace('hover:bg-emerald-500', 'hover:bg-sky-600');
+                            addToCalcBtn.disabled = false;
+                        }, 2000);
                     }
                 }
             });
@@ -496,18 +488,14 @@
 
             exportBtn.addEventListener('click', () => {
                 if (dailyTasks.length === 0) return;
-
                 let exportText = `Přehled dne - ${new Date().toLocaleDateString('cs-CZ')}\n`;
                 exportText += '====================================\n';
                 exportText += `Celkový bonus: ${totalBonusEl.textContent}\n`;
                 exportText += `Celkem úkonů: ${totalUkonyEl.textContent}\n`;
-                exportText += '====================================\n\n';
-                exportText += 'Seznam úkonů:\n';
-                
+                exportText += '====================================\n\nSeznam úkonů:\n';
                 dailyTasks.forEach(task => {
                     exportText += `- ${task.sku}: ${task.internal} (Bonus: ${task.bonus}, Úkony: ${task.ukony})\n`;
                 });
-
                 const blob = new Blob([exportText], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
