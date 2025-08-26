@@ -1,0 +1,85 @@
+sku,category,internal,external,bonus,ukony,devices,mask
+S0033,Playstation externí opravy,LB1 - Výměna HDD/SSD u PlayStation konzolí,výměna pevného disku,100 Kč,1,"PS4, PS4 Pro, PS5, PS5 Slim",žádná
+S0034,Playstation externí opravy,LB2 - Výměna jednoho dílu u PS4,"výměna ventilátoru, zdroje, mechaniky u PS4",170 Kč,1.5,"PS4, PS4 Slim, PS4 Pro",žádná
+S0035,Playstation externí opravy,LB3 - Výměna více dílů u PS4 nebo výměnu jednoho dílu u PS5,"výměna ventilátoru, zdroje a mechaniky zároveň u PS4, nebo výměna ventilátoru, zdroje, mechaniky u PS5",250 Kč,1.75,"PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim",žádná
+S0142,Playstation externí opravy,LB7 - Rozsáhlé opravy - pájení konektorů a čipů (neprovádí se na prodejnách),rozsáhlá oprava základní desky (pájení).,300 Kč,2,"PS4, PS5",žádná
+S0042,Xbox externí opravy,LB1 - Výměna HDD/SSD u Xbox konzolí,výměna pevného disku,100 Kč,1,"Xbox One S, Xbox One X, Xbox Series S",žádná
+S0043,Xbox externí opravy,LB2 - Výměna jednoho dílu u Xbox ONE/ Series S,"výměna ventilátoru, zdroje, mechaniky u Xboxu ONE/ Series S",170 Kč,1.5,"Xbox One S, Xbox One X, Xbox Series S",žádná
+S0044,Xbox externí opravy,LB3 - Výměna více dílů u Xbox ONE/Series S nebo jednoho díli Xbox Series X,"výměna ventilátoru, zdroje a mechaniky zároveň u Xboxu ONE/ Series S, nebo výměna ventilátoru, zdroje, mechaniky u Xbox Series X",250 Kč,1.75,"Xbox One S, Xbox One X, Xbox Series S, Xbox Series X",žádná
+S0143,Xbox externí opravy,LB7 - Rozsáhlé opravy - pájení konektorů a čipů (neprovádí se na prodejnách),rozsáhlá oprava základní desky (pájení).,300 Kč,2,"Xbox One, Xbox Series",žádná
+S0036,Nintendo externí opravy,LB4 - Oprava konzolí Nintendo,"výměna baterie, větráku, čtečky herních karet, čtečky paměťových karet, kolejnic",150 Kč,1.5,"Nintendo, Nintendo Lite, Nintendo OLED",žádná
+S0144,Nintendo externí opravy,LB7 - Rozsáhlé opravy - pájení konektorů a čipů (neprovádí se na prodejnách),rozsáhlá oprava základní desky (pájení).,250 Kč,2,Nintendo,žádná
+S0037,Ovladače externí opravy,"LB1 - Výměna potenciometru, 1 jakýkoliv díl","výměna jednoho potenciometru, výměna nabíjecího portu, výměna kloboučků, výměna tlačítek, výměna krytu ovladače",130 Kč,1,"ovladače Xbox, ovladače PlayStation, Joy-Con",žádná
+S0038,Ovladače externí opravy,"LB2 - Pájení desky/konektoru, více jak 2 díly, opravy Elite","výměna dvou potenciometrů, oprava pájením",170 Kč,1.25,"ovladače Xbox, ovladače PlayStation, Joy-Con",žádná
+S0050,Gaming interní opravy,LB1 - Opravy všech ovladačů,"výměna potenciometrů, výměna baterie, výměna tlačítek, výměna krytu ovladače, výměna kolejnic",135 Kč,1,Joy-Con,17 znaků
+S0051,Gaming interní opravy,"LB2 - Výměna jednoho dílu u konzolí, čištění + přepastování",,120 Kč,1.25,"PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S",17 znaků
+S0052,Gaming interní opravy,"LB3 - Výměna více dílů u konzolí, nebo 1 u PS5, Xbox Series",,150 Kč,1.5,"PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S",17 znaků
+S0053,Gaming interní opravy,LB7 - Rozsáhlé opravy - pájení konektorů a čipů (neprovádí se na prodejnách),rozsáhlá oprava základní desky (pájení).,220 Kč,1.75,"PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S, ovladače Xbox, ovladače PlayStation",17 znaků
+S0063,Apple externí opravy,L1 - Jeden díl na iPhone 6-11 (včetně pro modelů),"výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 6 až 11",130 Kč,1.25,"iPhone 6, iPhone 6 Plus, iPhone 7, iPhone 7 Plus, iPhone 8, iPhone 8 Plus, iPhone X, iPhone XS, iPhone XS Max, iPhone XR, iPhone 11, iPhone 11 Pro, iPhone 11 Pro Max",žádná
+S0064,Apple externí opravy,L2 - Jeden díl na iPhone 12 a výš nebo 2 díly na jakémkoliv modelu,"výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 12 a dále, výměna displeje a baterie zároveň u modelů do 11",220 Kč,1.5,"iPhone 12 mini, iPhone 12, iPhone 12 Pro, iPhone 12 Pro Max, iPhone 13 mini, iPhone 13, iPhone 13 Pro, iPhone 13 Pro Max, iPhone 14, iPhone 14 Plus, iPhone 14 Pro, iPhone 14 Pro Max",žádná
+S0065,Apple externí opravy,"L3 - Housing na jakýkoliv model, nebo víc jak 2 díly 12 a novější, iPad",,275 Kč,2,"iPhone 6, iPhone 6 Plus, iPhone 7, iPhone 7 Plus, iPhone 8, iPhone 8 Plus, iPhone X, iPhone XS, iPhone XS Max, iPhone XR, iPhone 11, iPhone 11 Pro, iPhone 11 Pro Max, iPhone 12 mini, iPhone 12, iPhone 12 Pro, iPhone 12 Pro Max, iPhone 13 mini, iPhone 13, iPhone 13 Pro, iPhone 13 Pro Max, iPhone 14, iPhone 14 Plus, iPhone 14 Pro, iPhone 14 Pro Max",žádná
+S0016,Apple interní opravy,L1V - Jeden díl u iPhonu 6-11 (včetně pro modelů),"výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 6 až 11",100 Kč,1,"iPhone 6, iPhone 6 Plus, iPhone 7, iPhone 7 Plus, iPhone 8, iPhone 8 Plus, iPhone X, iPhone XS, iPhone XS Max, iPhone XR, iPhone 11, iPhone 11 Pro, iPhone 11 Pro Max",S + 10/12 znaků
+S0017,Apple interní opravy,L2V - Jeden díl u iPhonu 12 a výš nebo 2 díly do  na jakémkoliv modelu,"výměna baterie, displeje, reproduktoru, tlačítek, nabíjecí cívky - jednotlivě u modelů iPhonů 12 a dále, výměna displeje a baterie zároveň",150 Kč,1.25,"iPhone 12 mini, iPhone 12, iPhone 12 Pro, iPhone 12 Pro Max, iPhone 13 mini, iPhone 13, iPhone 13 Pro, iPhone 13 Pro Max, iPhone 14, iPhone 14 Plus, iPhone 14 Pro, iPhone 14 Pro Max",S + 10/12 znaků
+S0015,Apple interní opravy,"L3V - Housing na jakýkoliv model, nebo víc jak 2 díly 12 a novější, iPad","výměna housingu, nebo více dílů",225 Kč,1.5,"Všechny iPhony, iPad",S + 10/12 znaků
+170188,PC/Tigo externí opravy,Diagnostika počítačů / Notebooků,,111 Kč,1,PC,žádná
+170190,PC/Tigo externí opravy,Kompletní čištění a přepastování počítačů / notebooků,,185 Kč,1,PC,žádná
+170191,PC/Tigo externí opravy,Čistá instalace OS včetně všech ovladačů,,123 Kč,1,PC,žádná
+170192,PC/Tigo externí opravy,"Čištění, diagnostika a přepastování (balíček)",,210 Kč,1,PC,žádná
+170193,PC/Tigo externí opravy,Výměna komponent a následné testování,,123 Kč,1,PC,žádná
+170194,PC/Tigo externí opravy,Konzultace (30 minut),,61 Kč,1,PC,žádná
+170195,PC/Tigo externí opravy,Kompletace PC z komponent zakoupených ve Smarty.cz,,123 Kč,1,PC,žádná
+170196,PC/Tigo externí opravy,Kompletace PC z vlastních komponent,,123 Kč,1,PC,žádná
+S0150,PC/Tigo externí opravy,"LB1 - Software, přesazení komponent",softwarová oprava nebo přesazení komponent v PC.,100 Kč,1,PC,žádná
+S0151,PC/Tigo externí opravy,"LB2 - RAM, GPU",výměna RAM nebo grafické karty v PC.,150 Kč,1.5,PC,žádná
+S0152,PC/Tigo externí opravy,"LB3 - CPU, zdroj, ostatní","výměna procesoru, zdroje nebo jiných dílů v PC.",200 Kč,2,PC,žádná
+S8800,Externí služby,Diagnostika a čištění ovladače,,82 Kč,1,Všechny ovladače,žádná
+S8805,Externí služby,Diagnostika a čištění konzole,,99 Kč,1,Všechny konzole,žádná
+S8804,Externí služby,Update/obnovení softwaru konzole,,99 Kč,1,Všechny konzole,žádná
+S8777,Externí služby,"Čištění a přepastování konzolí PS4, PS5, Xbox One,X,S",,214 Kč,1,"PS4,PS5,Xbox One,X,S",žádná
+S0019,Externí služby,Reinstalace iOS,,32 Kč,1,"iPhone, iPad",S + 10/12 znaků
+S0003,Externí služby,Reinstalace MacOS,,82 Kč,1,"MacBook, iMac, Mac mini",S + 10/12 znaků
+S0001,Externí služby,Diagnostika zařízení a čištění iOS/Android,,55 Kč,1,"iPhone, Android",S + 10/12 znaků
+S0102,Externí služby,Diagnostika zařízení a čištění Airpods/EarPods,,61 Kč,1,"Airpods, EarPods",žádná
+S0021,Externí služby,Nezáruční zamítnutí reklamace iOS,,55 Kč,1,"iPhone, Apple Watch, PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S",žádná
+S0160,Interní služby,Diagnostika a čištění DEMO a vratek,,30 Kč,0.25,"iPhone, Android, MacBook",žádná
+S0018,Interní služby,Kontrola výkupu diagnostika a čištění následné odeslání,,30 Kč,0.25,"iPhone, Apple Watch, PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S",S + 10/12 znaků
+S0031,Interní služby,Zamítnutí záruční reklamace,,20 Kč,0.25,,žádná
+S0158,Interní služby,"Zpracování výkupu na prodejně technikem iPhone, Android, Mac",,40 Kč,0.25,"iPhone, Apple Watch, PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S",S+12 znaků
+S0159,Interní služby,"Zpracování výkupu technikem na prodejně Konzole, Watch",,100 Kč,0.5,"Apple Watch, PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S",17 znaků
+15642,Interní služby,doplnění ceny u opravy,,0 Kč,0,"iPhone, Apple Watch, PS4, PS4 Slim, PS4 Pro, PS5, PS5 Slim, Xbox One S, Xbox One X, Xbox Series S",žádná
+196266,Interní služby,zprostředkování služby konzultantem,,20 Kč,0,,žádná
+S8270,Baterie a displeje PB SK,PB iPhone 11 baterie,iPhone 11 baterie,,,,
+S8604,Baterie a displeje PB SK,PB iPhone 11 display,iPhone 11 display,,,,
+S8269,Baterie a displeje PB SK,PB iPhone 11 Pro baterie,iPhone 11 Pro baterie,,,,
+S8603,Baterie a displeje PB SK,PB iPhone 11 Pro display,iPhone 11 Pro display,,,,
+S8268,Baterie a displeje PB SK,PB iPhone 11 Pro Max baterie,iPhone 11 Pro Max baterie,,,,
+S8602,Baterie a displeje PB SK,PB iPhone 11 Pro Max display,iPhone 11 Pro Max display,,,,
+S8267,Baterie a displeje PB SK,PB iPhone 12 Mini baterie,iPhone 12 Mini baterie,,,,
+S8256,Baterie a displeje PB SK,PB iPhone 12 Mini displej,iPhone 12 Mini displej,,,,
+S8265,Baterie a displeje PB SK,PB iPhone 12 Pro Max baterie,iPhone 12 Pro Max baterie,,,,
+S8254,Baterie a displeje PB SK,PB iPhone 12 Pro Max displej,iPhone 12 Pro Max displej,,,,
+S8266,Baterie a displeje PB SK,PB iPhone 12/12 Pro baterie,iPhone 12/12 Pro baterie,,,,
+S8255,Baterie a displeje PB SK,PB iPhone 12/12 Pro displej,iPhone 12/12 Pro displej,,,,
+S8263,Baterie a displeje PB SK,PB iPhone 13 baterie,iPhone 13 baterie,,,,
+S8252,Baterie a displeje PB SK,PB iPhone 13 displej,iPhone 13 displej,,,,
+S8264,Baterie a displeje PB SK,PB iPhone 13 Mini baterie,iPhone 13 Mini baterie,,,,
+S8253,Baterie a displeje PB SK,PB iPhone 13 Mini displej,iPhone 13 Mini displej,,,,
+S8262,Baterie a displeje PB SK,PB iPhone 13 Pro baterie,iPhone 13 Pro baterie,,,,
+S8251,Baterie a displeje PB SK,PB iPhone 13 Pro displej,iPhone 13 Pro displej,,,,
+S8261,Baterie a displeje PB SK,PB iPhone 13 Pro Max baterie,iPhone 13 Pro Max baterie,,,,
+S8250,Baterie a displeje PB SK,PB iPhone 13 Pro Max displej,iPhone 13 Pro Max displej,,,,
+S8260,Baterie a displeje PB SK,PB iPhone 14 baterie,iPhone 14 baterie,,,,
+S8257,Baterie a displeje PB SK,PB iPhone 14 Plus baterie,iPhone 14 Plus baterie,,,,
+S8259,Baterie a displeje PB SK,PB iPhone 14 Pro baterie,iPhone 14 Pro baterie,,,,
+S8258,Baterie a displeje PB SK,PB iPhone 14 Pro Max baterie,iPhone 14 Pro Max baterie,,,,
+S8201,Baterie a displeje PB SK,PB iPhone SE 2022 baterie,iPhone SE 2022 baterie,,,,
+S8601,Baterie a displeje PB SK,PB iPhone SE 2020 displej,iPhone SE 2020 displej,,,,
+S8608,Baterie a displeje PB SK,PB iPhone X displej,iPhone X displej,,,,
+S8203,Krabice,krabice na výkup telefony,,,,"iPhone 6, iPhone 6 Plus, iPhone 7, iPhone 7 Plus, iPhone 8, iPhone 8 Plus, iPhone X, iPhone XS, iPhone XS Max, iPhone XR, iPhone 11, iPhone 11 Pro, iPhone 11 Pro Max, iPhone 12 mini, iPhone 12, iPhone 12 Pro, iPhone 12 Pro Max, iPhone 13 mini, iPhone 13, iPhone 13 Pro, iPhone 13 Pro Max, iPhone 14, iPhone 14 Plus, iPhone 14 Pro, iPhone 14 Pro Max",
+S8204,Krabice,krabice na výkup watch,,,,Apple Watch,
+S8205,Krabice,krabice na výkup iPad + Mac,,,,"iPad, MacBook",
+S8206,Krabice,krabice na výkup ovladače,,,,ovladače,
+S8207,Krabice,krabice výkup Xbox Serie S + Nintendo + Rog Ally,,,,,
+S8208,Krabice,krabice na výkup Lenovo + Xbox S/X,,,,,
+S8209,Krabice,krabice výkup Xbox Series X,,,,,
+S8210,Krabice,krabice výkup PS4+PS5,,,,,
