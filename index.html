@@ -142,7 +142,6 @@
             let dailyTasks = [];
             let categoryColorMap = {};
 
-            // --- AKTUALIZOVANÁ LOKÁLNÍ DATA ---
             const localControllersData = [
                 { sku: 'P77777', category: 'Ovladače', internal: 'DualSense Wireless Controller bílý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
                 { sku: 'P77778', category: 'Ovladače', internal: 'DualSense Wireless Controller mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
@@ -173,44 +172,56 @@
             ];
             
             const todayString = new Date().toLocaleDateString('cs-CZ');
-            localBuyoutDescriptionsData.forEach(item => {
-                item.internal = item.internal.replace('19.7.2025', todayString);
-            });
+            localBuyoutDescriptionsData.forEach(item => { item.internal = item.internal.replace('19.7.2025', todayString); });
             const colorPalette = [{ bg: 'bg-sky-100', text: 'text-sky-800', filter: 'bg-sky-600' }, { bg: 'bg-emerald-100', text: 'text-emerald-800', filter: 'bg-emerald-600' }];
             function saveDailyTasks() { localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks)); }
             function loadDailyTasks() { const savedTasks = localStorage.getItem('dailyTasks'); if (savedTasks) { dailyTasks = JSON.parse(savedTasks); } }
+            
+            // --- ZDE JE OPRAVENÉ POŘADÍ ---
             function parseCSV(csvText) {
-                const lines = csvText.trim().split(/\r\n|\n/); const data = []; const regex = /("([^"]|"")*"|[^,]*)(,|$)/g;
+                const lines = csvText.trim().split(/\r\n|\n/);
+                const data = [];
+                const regex = /("([^"]|"")*"|[^,]*)(,|$)/g;
                 for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i]; if (!line.trim()) continue; let values = []; let match; regex.lastIndex = 0;
-                    while (match = regex.exec(line)) { let value = match[1]; if (value.startsWith('"') && value.endsWith('"')) { value = value.slice(1, -1).replace(/""/g, '"'); } values.push(value.trim()); if (match[3] === '') break; }
-                    data.push({ sku: values[0] || '', category: values[1] || '', internal: values[3] || '', external: values[2] || '', bonus: values[4] || '0', ukony: values[5] || '0', devices: values[6] || '', mask: values[7] || '' });
-                } return data;
+                    const line = lines[i];
+                    if (!line.trim()) continue;
+                    let values = [];
+                    let match;
+                    regex.lastIndex = 0;
+                    while (match = regex.exec(line)) {
+                        let value = match[1];
+                        if (value.startsWith('"') && value.endsWith('"')) {
+                            value = value.slice(1, -1).replace(/""/g, '"');
+                        }
+                        values.push(value.trim());
+                        if (match[3] === '') break;
+                    }
+                    const obj = {
+                        // Pořadí sloupců: 0      1         3         2         4        5        6        7
+                        // Očekávané:     sku, category, internal, external, bonus,   ukony,   devices, mask
+                        sku:      values[0] || '',
+                        category: values[1] || '',
+                        internal: values[3] || '',
+                        external: values[2] || '',
+                        bonus:    values[4] || '0',
+                        ukony:    values[5] || '0',
+                        devices:  values[6] || '',
+                        mask:     values[7] || ''
+                    };
+                    data.push(obj);
+                }
+                return data;
             }
 
             async function fetchAndRender() {
-                const loaderHtml = `
-                    <div class="md:col-span-2 xl:col-span-3 text-center p-8">
-                        <p id="loading-text" class="text-slate-700 text-lg font-semibold mb-4"></p>
-                        <div class="w-full max-w-md mx-auto bg-slate-200 rounded-full h-4">
-                            <div id="loading-progress-bar" class="h-4 rounded-full" style="width: 0%"></div>
-                        </div>
-                    </div>
-                `;
+                const loaderHtml = `<div class="md:col-span-2 xl:col-span-3 text-center p-8"><p id="loading-text" class="text-slate-700 text-lg font-semibold mb-4"></p><div class="w-full max-w-md mx-auto bg-slate-200 rounded-full h-4"><div id="loading-progress-bar" class="h-4 rounded-full" style="width: 0%"></div></div></div>`;
                 tasksGrid.innerHTML = loaderHtml;
-                
                 const loadingText = document.getElementById('loading-text');
                 const loadingProgressBar = document.getElementById('loading-progress-bar');
-                
-                const loadingMessages = ["Navazuji spojení se serverem...", "Ověřuji datový stream...", "Skládám bajty dohromady...", "Ještě chvilku, káva se vaří... ☕"];
+                const loadingMessages = ["Nawazuji spojení se serverem...", "Ověřuji datový stream...", "Skládám bajty dohromady...", "Ještě chvilku, káva se vaří... ☕"];
                 let messageIndex = 0;
                 loadingText.textContent = loadingMessages[messageIndex];
-
-                const textInterval = setInterval(() => {
-                    messageIndex = (messageIndex + 1) % loadingMessages.length;
-                    loadingText.textContent = loadingMessages[messageIndex];
-                }, 2500);
-
+                const textInterval = setInterval(() => { messageIndex = (messageIndex + 1) % loadingMessages.length; loadingText.textContent = loadingMessages[messageIndex]; }, 2500);
                 let progress = 0;
                 const progressInterval = setInterval(() => {
                     progress++;
@@ -222,9 +233,7 @@
                     }
                     if (progress >= 100) { clearInterval(progressInterval); }
                 }, 100);
-
                 await new Promise(resolve => setTimeout(resolve, 10000));
-
                 try {
                     const githubCsvUrl = 'https://raw.githubusercontent.com/F1lDa-bot/servis/refs/heads/main/ServisniUkonyData%20-%20servisni_ukony.csv';
                     const response = await fetch(githubCsvUrl);
@@ -232,10 +241,8 @@
                     const csvText = await response.text();
                     let parsedData = parseCSV(csvText);
                     serviceTasksData = parsedData.concat(localControllersData, localBuyoutDescriptionsData);
-                    
                     searchInput.disabled = false;
                     searchInput.placeholder = 'Např. baterie, S0033...';
-
                     setupFilters();
                     loadDailyTasks();
                     updateCalculatorUI();
@@ -281,7 +288,7 @@
                 const inactiveClasses = ['bg-slate-200', 'hover:bg-slate-300', 'text-slate-700'];
                 const getActiveButtonClasses = (category) => {
                     if (category === 'Vše') return ['bg-sky-600', 'text-white', 'font-semibold'];
-                    const color = categoryColorMap[category];
+                    const color = categoryColorMap[category] || { filter: 'bg-purple-600' };
                     return [color.filter, 'text-white', 'font-semibold'];
                 };
                 filterButtonsContainer.innerHTML = buttons.map(category => { const isActive = category === 'Vše'; const buttonClasses = isActive ? getActiveButtonClasses(category).join(' ') : inactiveClasses.join(' '); return `<button class="filter-btn px-3 py-1.5 text-sm rounded-md transition-colors duration-200 ${buttonClasses}" data-category="${category}">${category}</button>`; }).join('');
@@ -298,15 +305,34 @@
                 });
             }
             function updateCalculatorUI() {
-                let totalBonus = 0, totalUkony = 0;
-                dailyTasks.forEach(task => { totalBonus += parseFloat(task.bonus) || 0; totalUkony += parseFloat(task.ukony) || 0; });
+                let totalBonus = 0;
+                let totalUkony = 0;
+                const cleanAndParse = (value) => {
+                    if (typeof value !== 'string') { value = String(value); }
+                    const cleanedValue = value.replace(',', '.');
+                    const number = parseFloat(cleanedValue);
+                    return isNaN(number) ? 0 : number;
+                };
+                dailyTasks.forEach(task => {
+                    totalBonus += cleanAndParse(task.bonus);
+                    totalUkony += cleanAndParse(task.ukony);
+                });
                 totalBonusEl.textContent = totalBonus.toFixed(2);
                 totalUkonyEl.textContent = totalUkony.toFixed(2);
-                const progress = Math.min((totalUkony / 7) * 100, 100);
+                const dailyGoal = 7;
+                const progress = Math.min((totalUkony / dailyGoal) * 100, 100);
                 progressBarEl.style.width = `${progress}%`;
-                progressBarEl.classList.toggle('bg-emerald-500', totalUkony >= 7);
-                progressBarEl.classList.toggle('bg-sky-500', totalUkony < 7);
-                if (dailyTasks.length === 0) { calculatorListEl.innerHTML = `<p class="text-slate-400 text-sm">Zatím žádné úkony.</p>`; } else { calculatorListEl.innerHTML = dailyTasks.map((task, index) => `<div class="flex justify-between items-center text-sm p-1 hover:bg-slate-100 rounded"><span class="truncate pr-2" title="${task.sku} - ${task.internal}">${task.sku} - ${task.internal}</span><button class="remove-from-calc-btn text-red-500 hover:text-red-700 font-bold px-1" data-index="${index}">&times;</button></div>`).join(''); }
+                progressBarEl.classList.toggle('bg-emerald-500', totalUkony >= dailyGoal);
+                progressBarEl.classList.toggle('bg-sky-500', totalUkony < dailyGoal);
+                if (dailyTasks.length === 0) {
+                    calculatorListEl.innerHTML = `<p class="text-slate-400 text-sm">Zatím žádné úkony.</p>`;
+                } else {
+                    calculatorListEl.innerHTML = dailyTasks.map((task, index) => `
+                        <div class="flex justify-between items-center text-sm p-1 hover:bg-slate-100 rounded">
+                            <span class="truncate pr-2" title="${task.sku} - ${task.internal}">${task.sku} - ${task.internal}</span>
+                            <button class="remove-from-calc-btn text-red-500 hover:text-red-700 font-bold px-1" data-index="${index}">&times;</button>
+                        </div>`).join('');
+                }
                 saveDailyTasks();
             }
             tasksGrid.addEventListener('click', (e) => {
