@@ -77,12 +77,9 @@
             <p class="mt-2 text-lg text-slate-600">Interaktivní nástroj pro rychlé vyhledávání standardizovaných popisů oprav a SK kódů.</p>
         </header>
 
-        <!-- NOVÉ DVOU-SLOUPCOVÉ ROZLOŽENÍ -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            <!-- LEVÝ SLOUPEC: Filtry a seznam úkonů -->
             <div class="lg:col-span-2">
-                <!-- Sekce filtrů a vyhledávání -->
                 <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="md:col-span-1">
@@ -98,15 +95,12 @@
                     </div>
                 </div>
 
-                <!-- Hlavní mřížka s kartami úkonů -->
                 <main>
                     <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                         <!-- Karty úkonů se vykreslí zde (nebo ukazatel načítání) -->
-                    </div>
+                         </div>
                 </main>
             </div>
 
-            <!-- PRAVÝ SLOUPEC: Kalkulačka -->
             <div class="lg:col-span-1">
                 <div id="calculator-section" class="bg-white p-6 rounded-xl shadow-sm sticky-calculator">
                     <h2 class="text-xl font-bold text-slate-800 mb-4">Denní kalkulačka</h2>
@@ -147,12 +141,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Elementy na stránce
             const tasksGrid = document.getElementById('tasks-grid');
             const filterButtonsContainer = document.getElementById('filter-buttons');
             const searchInput = document.getElementById('search');
             
-            // Elementy kalkulačky
             const totalBonusEl = document.getElementById('total-bonus');
             const totalUkonyEl = document.getElementById('total-ukony');
             const progressBarEl = document.getElementById('progress-bar');
@@ -160,40 +152,18 @@
             const exportBtn = document.getElementById('export-btn');
             const resetBtn = document.getElementById('reset-btn');
 
-            // Stavové proměnné
             let serviceTasksData = [];
             let activeFilter = 'Vše';
             let dailyTasks = [];
             let categoryColorMap = {};
 
-            // Lokální data
             const localControllersData = [
                 { sku: 'P77777', category: 'Ovladače', internal: 'DualSense Wireless Controller bílý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
                 { sku: 'P77778', category: 'Ovladače', internal: 'DualSense Wireless Controller mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77779', category: 'Ovladače', internal: 'Sony DualShock 4 Controller Black V2', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77780', category: 'Ovladače', internal: 'Sony DualShock 4 Controller V2 mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77784', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair neonově červený/neonově modrý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77785', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77786', category: 'Ovladače', internal: 'Nintendo Switch Pro Controller ovladač mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77787', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77788', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77789', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77790', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77791', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'P77792', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }
             ];
             const localBuyoutDescriptionsData = [
                 { sku: 'Konzole', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
                 { sku: 'Android', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'iPhone', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nRozbitý/neoriginální displej: N\nStav zařízení: Y\nJe LCD originální: Y\nDiagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'iPad', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\nJe LCD originální: Y\nDiagnostiky: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'Apple Watch', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nJe LCD originální: Y\nDiagnostiky: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'Apple Pencil/Magic Mouse', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nFunkční test: OK\nStav zařízení: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'MacBook', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nDiagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'iMac, Mac mini, Mac Studio', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nDiagnostiky: FT OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'DEMO', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK/ funkční testy\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'ZAPU', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
-                { sku: 'VRATKA', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
             ];
             
             const todayString = new Date().toLocaleDateString('cs-CZ');
@@ -204,13 +174,6 @@
             const colorPalette = [
                 { bg: 'bg-sky-100', text: 'text-sky-800', filter: 'bg-sky-600' },
                 { bg: 'bg-emerald-100', text: 'text-emerald-800', filter: 'bg-emerald-600' },
-                { bg: 'bg-red-100', text: 'text-red-800', filter: 'bg-red-600' },
-                { bg: 'bg-purple-100', text: 'text-purple-800', filter: 'bg-purple-600' },
-                { bg: 'bg-orange-100', text: 'text-orange-800', filter: 'bg-orange-600' },
-                { bg: 'bg-yellow-100', text: 'text-yellow-800', filter: 'bg-yellow-600' },
-                { bg: 'bg-pink-100', text: 'text-pink-800', filter: 'bg-pink-600' },
-                { bg: 'bg-teal-100', text: 'text-teal-800', filter: 'bg-teal-600' },
-                { bg: 'bg-indigo-100', text: 'text-indigo-800', filter: 'bg-indigo-600' },
             ];
 
             function saveDailyTasks() {
@@ -245,8 +208,8 @@
                     const obj = {
                         sku:      values[0] || '',
                         category: values[1] || '',
-                        internal: values[2] || '',
-                        external: values[3] || '',
+                        internal: values[3] || '',
+                        external: values[2] || '',
                         bonus:    values[4] || '0',
                         ukony:    values[5] || '0',
                         devices:  values[6] || '',
@@ -258,8 +221,7 @@
             }
 
             async function fetchAndRender() {
-                // ZDE VLOŽTE VÁŠ PUBLIKOVANÝ ODKAZ
-                const sheetUrl = 'VLOŽTE_SEM_VÁŠ_PUBLIKOVANÝ_ODKAZ_NA_CSV';
+                const sheetUrl = 'VAŠE_URL_ADRESA_PRO_PUBLIKOVANOU_CSV_TABULKU';
                 
                 tasksGrid.innerHTML = `<div class="loader md:col-span-2"></div>`;
 
@@ -269,9 +231,10 @@
                         throw new Error(`Chyba při načítání dat: ${response.statusText}. Zkontrolujte, zda je odkaz správný a tabulka publikovaná.`);
                     }
                     const csvText = await response.text();
-                    let fetchedData = parseCSV(csvText);
                     
-                    serviceTasksData = fetchedData.concat(localControllersData, localBuyoutDescriptionsData);
+                    let parsedData = parseCSV(csvText);
+                    
+                    serviceTasksData = parsedData.concat(localControllersData, localBuyoutDescriptionsData);
                     
                     searchInput.disabled = false;
                     searchInput.placeholder = 'Např. baterie, S0033...';
@@ -300,7 +263,7 @@
                 );
 
                 if (filteredData.length === 0) {
-                    tasksGrid.innerHTML = `<p class="text-slate-500 md:col-span-2 text-center p-8">Nebyly nalezeny žádné úkony pro zadaná kritéria.</p>`;
+                    tasksGrid.innerHTML = `<p class="text-slate-500 md:col-span-2 text-center p-8">Nebyly nalezeny žádné úkony.</p>`;
                     return;
                 }
 
@@ -308,10 +271,9 @@
                     const card = document.createElement('div');
                     card.className = 'task-card bg-white p-5 rounded-lg shadow-md border border-slate-200 flex flex-col';
                     card.dataset.category = task.category;
-
                     const colorClasses = categoryColorMap[task.category] || colorPalette[0];
-                    
                     let cardContent = '';
+
                     if (task.category === 'Ovladače' || task.category === 'Interní popisek výkupů') {
                         let title = task.category === 'Ovladače' ? 'Název ovladače:' : `${task.sku}:`;
                         cardContent = `
@@ -340,14 +302,12 @@
                                     </div>
                                 </div>`;
                         }
-                        
                         const addToCalcBtn = `
                             <div class="mt-auto pt-4">
                                 <button class="add-to-calc-btn w-full bg-sky-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-sky-600 transition-colors" data-sku="${task.sku}">
                                     Přidat do kalkulačky
                                 </button>
                             </div>`;
-
                         cardContent = `
                             <div class="flex-grow flex flex-col">
                                 <div class="flex-grow">
@@ -385,40 +345,32 @@
             
             function setupFilters() {
                 const uniqueCategories = [...new Set(serviceTasksData.map(task => task.category))];
-                
                 uniqueCategories.forEach((category, index) => {
                     categoryColorMap[category] = colorPalette[index % colorPalette.length];
                 });
-
                 const buttons = ['Vše', ...uniqueCategories];
                 const inactiveClasses = ['bg-slate-200', 'hover:bg-slate-300', 'text-slate-700'];
-
                 const getActiveButtonClasses = (category) => {
                     if (category === 'Vše') return ['bg-sky-600', 'text-white', 'font-semibold'];
                     const color = categoryColorMap[category];
                     return [color.filter, 'text-white', 'font-semibold'];
                 };
-
                 filterButtonsContainer.innerHTML = buttons.map(category => {
                     const isActive = category === 'Vše';
                     const buttonClasses = isActive ? getActiveButtonClasses(category).join(' ') : inactiveClasses.join(' ');
                     return `<button class="filter-btn px-3 py-1.5 text-sm rounded-md transition-colors duration-200 ${buttonClasses}" data-category="${category}">${category}</button>`;
                 }).join('');
-
                 filterButtonsContainer.addEventListener('click', (e) => {
                     const targetButton = e.target.closest('.filter-btn');
                     if (!targetButton) return;
-
                     filterButtonsContainer.querySelectorAll('.filter-btn').forEach(btn => {
                         btn.classList.remove(...getActiveButtonClasses(btn.dataset.category));
                         btn.classList.add(...inactiveClasses);
                     });
-                    
                     const newCategory = targetButton.dataset.category;
                     targetButton.classList.remove(...inactiveClasses);
                     targetButton.classList.add(...getActiveButtonClasses(newCategory));
                     activeFilter = newCategory;
-
                     searchInput.value = '';
                     renderCards();
                 });
@@ -431,16 +383,13 @@
                     totalBonus += parseFloat(task.bonus) || 0;
                     totalUkony += parseFloat(task.ukony) || 0;
                 });
-
                 totalBonusEl.textContent = totalBonus.toFixed(2);
                 totalUkonyEl.textContent = totalUkony.toFixed(2);
-
                 const dailyGoal = 7;
                 const progress = Math.min((totalUkony / dailyGoal) * 100, 100);
                 progressBarEl.style.width = `${progress}%`;
                 progressBarEl.classList.toggle('bg-emerald-500', totalUkony >= dailyGoal);
                 progressBarEl.classList.toggle('bg-sky-500', totalUkony < dailyGoal);
-
                 if (dailyTasks.length === 0) {
                     calculatorListEl.innerHTML = `<p class="text-slate-400 text-sm">Zatím žádné úkony.</p>`;
                 } else {
@@ -462,13 +411,10 @@
                         }
                     }).catch(err => console.error('Nepodařilo se zkopírovat:', err));
                 };
-
                 const skuItem = e.target.closest('.sku-item');
                 if (skuItem) copyAndShowFeedback(skuItem.dataset.sku, skuItem.nextElementSibling);
-
                 const descriptionItem = e.target.closest('.description-item');
                 if (descriptionItem) copyAndShowFeedback(descriptionItem.innerText, descriptionItem.parentElement.querySelector('.description-copy-feedback'));
-
                 const addToCalcBtn = e.target.closest('.add-to-calc-btn');
                 if (addToCalcBtn && !addToCalcBtn.disabled) {
                     const sku = addToCalcBtn.dataset.sku;
@@ -476,7 +422,6 @@
                     if (taskToAdd) {
                         dailyTasks.push(taskToAdd);
                         updateCalculatorUI();
-
                         const originalText = addToCalcBtn.innerHTML;
                         addToCalcBtn.innerHTML = 'Přidáno ✓';
                         addToCalcBtn.classList.replace('bg-sky-500', 'bg-emerald-500');
@@ -528,7 +473,7 @@
             });
 
             searchInput.addEventListener('input', renderCards);
-
+            
             fetchAndRender();
         });
     </script>
