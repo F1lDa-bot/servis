@@ -221,14 +221,16 @@
             }
 
             async function fetchAndRender() {
-                const sheetUrl = 'VAŠE_URL_ADRESA_PRO_PUBLIKOVANOU_CSV_TABULKU';
+                // --- ZMĚNA ZDE ---
+                // VLOŽTE VÁŠ ODKAZ Z GITHUBu (po kliknutí na tlačítko "Raw")
+                const githubCsvUrl = 'https://raw.githubusercontent.com/VASEJMENO/NAZEV-REPOZITARE/main/nazev_souboru.csv';
                 
                 tasksGrid.innerHTML = `<div class="loader md:col-span-2"></div>`;
 
                 try {
-                    const response = await fetch(sheetUrl);
+                    const response = await fetch(githubCsvUrl);
                     if (!response.ok) {
-                        throw new Error(`Chyba při načítání dat: ${response.statusText}. Zkontrolujte, zda je odkaz správný a tabulka publikovaná.`);
+                        throw new Error(`Chyba při načítání dat z GitHubu: ${response.statusText}. Zkontrolujte, zda je odkaz správný a repozitář veřejný.`);
                     }
                     const csvText = await response.text();
                     
@@ -245,7 +247,7 @@
                     renderCards();
                 } catch (error) {
                     tasksGrid.innerHTML = `<p class="text-red-500 font-semibold md:col-span-2 text-center p-8">${error.message}</p>`;
-                    console.error("Nepodařilo se načíst data z Google Sheetu:", error);
+                    console.error("Nepodařilo se načíst data z GitHubu:", error);
                 }
             }
 
