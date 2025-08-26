@@ -23,7 +23,7 @@
             position: absolute;
             top: -28px;
             right: 0;
-            background-color: #22c55e; /* green-500 */
+            background-color: #22c55e;
             color: white;
             padding: 2px 8px;
             border-radius: 4px;
@@ -47,25 +47,14 @@
             transition: opacity 0.3s ease;
             pointer-events: none;
         }
-        /* Pro přilepení kalkulačky na větších obrazovkách */
         @media (min-width: 1024px) {
             .sticky-calculator {
                 position: sticky;
-                top: 2rem; /* 32px */
+                top: 2rem;
             }
         }
-         .loader {
-            border: 4px solid #f3f4f6;
-            border-top: 4px solid #3b82f6;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 40px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        #loading-progress-bar {
+            transition: width 0.1s linear, background-color 0.5s ease;
         }
     </style>
 </head>
@@ -78,7 +67,6 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
             <div class="lg:col-span-2">
                 <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -94,13 +82,11 @@
                         </div>
                     </div>
                 </div>
-
                 <main>
                     <div id="tasks-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                         </div>
+                    </div>
                 </main>
             </div>
-
             <div class="lg:col-span-1">
                 <div id="calculator-section" class="bg-white p-6 rounded-xl shadow-sm sticky-calculator">
                     <h2 class="text-xl font-bold text-slate-800 mb-4">Denní kalkulačka</h2>
@@ -144,7 +130,6 @@
             const tasksGrid = document.getElementById('tasks-grid');
             const filterButtonsContainer = document.getElementById('filter-buttons');
             const searchInput = document.getElementById('search');
-            
             const totalBonusEl = document.getElementById('total-bonus');
             const totalUkonyEl = document.getElementById('total-ukony');
             const progressBarEl = document.getElementById('progress-bar');
@@ -157,85 +142,95 @@
             let dailyTasks = [];
             let categoryColorMap = {};
 
+            // --- AKTUALIZOVANÁ LOKÁLNÍ DATA ---
             const localControllersData = [
                 { sku: 'P77777', category: 'Ovladače', internal: 'DualSense Wireless Controller bílý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
                 { sku: 'P77778', category: 'Ovladače', internal: 'DualSense Wireless Controller mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77779', category: 'Ovladače', internal: 'Sony DualShock 4 Controller Black V2', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77780', category: 'Ovladače', internal: 'Sony DualShock 4 Controller V2 mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77784', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair neonově červený/neonově modrý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77785', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77786', category: 'Ovladače', internal: 'Nintendo Switch Pro Controller ovladač mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77787', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77788', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77789', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77790', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77791', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'P77792', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }
             ];
             const localBuyoutDescriptionsData = [
                 { sku: 'Konzole', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
                 { sku: 'Android', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'iPhone', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nRozbitý/neoriginální displej: N\nStav zařízení: Y\nJe LCD originální: Y\nDiagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'iPad', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\nJe LCD originální: Y\nDiagnostiky: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'Apple Watch', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nJe LCD originální: Y\nDiagnostiky: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'Apple Pencil/Magic Mouse', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nFunkční test: OK\nStav zařízení: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'MacBook', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nDiagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'iMac, Mac mini, Mac Studio', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nDiagnostiky: FT OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'DEMO', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK/ funkční testy\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'ZAPU', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
+                { sku: 'VRATKA', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
             ];
             
             const todayString = new Date().toLocaleDateString('cs-CZ');
             localBuyoutDescriptionsData.forEach(item => {
                 item.internal = item.internal.replace('19.7.2025', todayString);
             });
-
-            const colorPalette = [
-                { bg: 'bg-sky-100', text: 'text-sky-800', filter: 'bg-sky-600' },
-                { bg: 'bg-emerald-100', text: 'text-emerald-800', filter: 'bg-emerald-600' },
-            ];
-
-            function saveDailyTasks() {
-                localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks));
-            }
-
-            function loadDailyTasks() {
-                const savedTasks = localStorage.getItem('dailyTasks');
-                if (savedTasks) {
-                    dailyTasks = JSON.parse(savedTasks);
-                }
-            }
-
+            const colorPalette = [{ bg: 'bg-sky-100', text: 'text-sky-800', filter: 'bg-sky-600' }, { bg: 'bg-emerald-100', text: 'text-emerald-800', filter: 'bg-emerald-600' }];
+            function saveDailyTasks() { localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks)); }
+            function loadDailyTasks() { const savedTasks = localStorage.getItem('dailyTasks'); if (savedTasks) { dailyTasks = JSON.parse(savedTasks); } }
             function parseCSV(csvText) {
-                const lines = csvText.trim().split(/\r\n|\n/);
-                const data = [];
-                const regex = /("([^"]|"")*"|[^,]*)(,|$)/g;
+                const lines = csvText.trim().split(/\r\n|\n/); const data = []; const regex = /("([^"]|"")*"|[^,]*)(,|$)/g;
                 for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i];
-                    if (!line.trim()) continue;
-                    let values = [];
-                    let match;
-                    regex.lastIndex = 0;
-                    while (match = regex.exec(line)) {
-                        let value = match[1];
-                        if (value.startsWith('"') && value.endsWith('"')) {
-                            value = value.slice(1, -1).replace(/""/g, '"');
-                        }
-                        values.push(value.trim());
-                        if (match[3] === '') break;
-                    }
-                    const obj = {
-                        sku:      values[0] || '',
-                        category: values[1] || '',
-                        internal: values[3] || '',
-                        external: values[2] || '',
-                        bonus:    values[4] || '0',
-                        ukony:    values[5] || '0',
-                        devices:  values[6] || '',
-                        mask:     values[7] || ''
-                    };
-                    data.push(obj);
-                }
-                return data;
+                    const line = lines[i]; if (!line.trim()) continue; let values = []; let match; regex.lastIndex = 0;
+                    while (match = regex.exec(line)) { let value = match[1]; if (value.startsWith('"') && value.endsWith('"')) { value = value.slice(1, -1).replace(/""/g, '"'); } values.push(value.trim()); if (match[3] === '') break; }
+                    data.push({ sku: values[0] || '', category: values[1] || '', internal: values[3] || '', external: values[2] || '', bonus: values[4] || '0', ukony: values[5] || '0', devices: values[6] || '', mask: values[7] || '' });
+                } return data;
             }
 
             async function fetchAndRender() {
-                // --- ZMĚNA ZDE ---
-                // VLOŽTE VÁŠ ODKAZ Z GITHUBu (po kliknutí na tlačítko "Raw")
-                const githubCsvUrl = 'https://raw.githubusercontent.com/F1lDa-bot/servis/refs/heads/main/ServisniUkonyData%20-%20servisni_ukony.csv';
+                const loaderHtml = `
+                    <div class="md:col-span-2 xl:col-span-3 text-center p-8">
+                        <p id="loading-text" class="text-slate-700 text-lg font-semibold mb-4"></p>
+                        <div class="w-full max-w-md mx-auto bg-slate-200 rounded-full h-4">
+                            <div id="loading-progress-bar" class="h-4 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                `;
+                tasksGrid.innerHTML = loaderHtml;
                 
-                tasksGrid.innerHTML = `<div class="loader md:col-span-2"></div>`;
+                const loadingText = document.getElementById('loading-text');
+                const loadingProgressBar = document.getElementById('loading-progress-bar');
+                
+                const loadingMessages = ["Navazuji spojení se serverem...", "Ověřuji datový stream...", "Skládám bajty dohromady...", "Ještě chvilku, káva se vaří... ☕"];
+                let messageIndex = 0;
+                loadingText.textContent = loadingMessages[messageIndex];
+
+                const textInterval = setInterval(() => {
+                    messageIndex = (messageIndex + 1) % loadingMessages.length;
+                    loadingText.textContent = loadingMessages[messageIndex];
+                }, 2500);
+
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress++;
+                    if (loadingProgressBar) {
+                        loadingProgressBar.style.width = `${progress}%`;
+                        if (progress < 40) { loadingProgressBar.className = 'h-4 rounded-full bg-sky-500'; } 
+                        else if (progress < 80) { loadingProgressBar.className = 'h-4 rounded-full bg-orange-500'; } 
+                        else { loadingProgressBar.className = 'h-4 rounded-full bg-emerald-500'; }
+                    }
+                    if (progress >= 100) { clearInterval(progressInterval); }
+                }, 100);
+
+                await new Promise(resolve => setTimeout(resolve, 10000));
 
                 try {
+                    const githubCsvUrl = 'https://raw.githubusercontent.com/F1lDa-bot/servis/refs/heads/main/ServisniUkonyData%20-%20servisni_ukony.csv';
                     const response = await fetch(githubCsvUrl);
-                    if (!response.ok) {
-                        throw new Error(`Chyba při načítání dat z GitHubu: ${response.statusText}. Zkontrolujte, zda je odkaz správný a repozitář veřejný.`);
-                    }
+                    if (!response.ok) { throw new Error(`Chyba při načítání dat z GitHubu: ${response.statusText}.`); }
                     const csvText = await response.text();
-                    
                     let parsedData = parseCSV(csvText);
-                    
                     serviceTasksData = parsedData.concat(localControllersData, localBuyoutDescriptionsData);
                     
                     searchInput.disabled = false;
@@ -246,110 +241,42 @@
                     updateCalculatorUI();
                     renderCards();
                 } catch (error) {
-                    tasksGrid.innerHTML = `<p class="text-red-500 font-semibold md:col-span-2 text-center p-8">${error.message}</p>`;
-                    console.error("Nepodařilo se načíst data z GitHubu:", error);
+                    tasksGrid.innerHTML = `<p class="text-red-500 font-semibold md:col-span-2 xl:col-span-3 text-center p-8">${error.message}</p>`;
+                } finally {
+                    clearInterval(textInterval);
                 }
             }
-
+            
             function renderCards() {
                 tasksGrid.innerHTML = '';
                 const searchTerm = searchInput.value.toLowerCase();
-                const filteredData = serviceTasksData.filter(task => 
-                    (activeFilter === 'Vše' || task.category === activeFilter) && 
-                    (task.internal.toLowerCase().includes(searchTerm) || 
-                     (task.external && task.external.toLowerCase().includes(searchTerm)) ||
-                     task.sku.toLowerCase().includes(searchTerm) ||
-                     String(task.bonus).toLowerCase().includes(searchTerm) ||
-                     String(task.ukony).toLowerCase().includes(searchTerm) ||
-                     task.devices.toLowerCase().includes(searchTerm))
-                );
-
-                if (filteredData.length === 0) {
-                    tasksGrid.innerHTML = `<p class="text-slate-500 md:col-span-2 text-center p-8">Nebyly nalezeny žádné úkony.</p>`;
-                    return;
-                }
-
+                const filteredData = serviceTasksData.filter(task => (activeFilter === 'Vše' || task.category === activeFilter) && (task.internal.toLowerCase().includes(searchTerm) || (task.external && task.external.toLowerCase().includes(searchTerm)) || task.sku.toLowerCase().includes(searchTerm) || String(task.bonus).toLowerCase().includes(searchTerm) || String(task.ukony).toLowerCase().includes(searchTerm) || task.devices.toLowerCase().includes(searchTerm)));
+                if (filteredData.length === 0) { tasksGrid.innerHTML = `<p class="text-slate-500 md:col-span-2 xl:col-span-3 text-center p-8">Nebyly nalezeny žádné úkony.</p>`; return; }
                 filteredData.forEach((task) => {
                     const card = document.createElement('div');
                     card.className = 'task-card bg-white p-5 rounded-lg shadow-md border border-slate-200 flex flex-col';
                     card.dataset.category = task.category;
                     const colorClasses = categoryColorMap[task.category] || colorPalette[0];
                     let cardContent = '';
-
                     if (task.category === 'Ovladače' || task.category === 'Interní popisek výkupů') {
                         let title = task.category === 'Ovladače' ? 'Název ovladače:' : `${task.sku}:`;
-                        cardContent = `
-                            <div class="flex justify-between items-center mb-3">
-                                <span class="inline-block ${colorClasses.bg} ${colorClasses.text} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
-                                ${task.sku !== 'PLACEHOLDER' && task.category !== 'Interní popisek výkupů' ? 
-                                `<div class="relative">
-                                    <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
-                                    <div class="copy-feedback">Zkopírováno!</div>
-                                </div>` : ''}
-                            </div>
-                            <div class="relative">
-                                <h4 class="font-semibold text-slate-800 text-sm mb-1">${title}</h4>
-                                <p class="description-item text-sm text-slate-600 whitespace-pre-wrap cursor-pointer hover:bg-slate-100 p-1 rounded">${task.internal}</p>
-                                <div class="description-copy-feedback">Popis zkopírován!</div>
-                            </div>`;
+                        cardContent = `<div class="flex justify-between items-center mb-3"><span class="inline-block ${colorClasses.bg} ${colorClasses.text} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>${task.sku !== 'PLACEHOLDER' && task.category !== 'Interní popisek výkupů' ? `<div class="relative"><span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span><div class="copy-feedback">Zkopírováno!</div></div>` : ''}</div><div class="relative"><h4 class="font-semibold text-slate-800 text-sm mb-1">${title}</h4><p class="description-item text-sm text-slate-600 whitespace-pre-wrap cursor-pointer hover:bg-slate-100 p-1 rounded">${task.internal}</p><div class="description-copy-feedback">Popis zkopírován!</div></div>`;
                     } else {
                         let devicesHtml = '';
                         if (task.devices && task.devices.trim() !== '') {
                             const deviceList = task.devices.split(';').map(d => d.trim());
-                            devicesHtml = `
-                                <div class="mt-3 pt-3 border-t border-slate-200">
-                                    <h4 class="font-semibold text-slate-800 text-sm mb-2">Zařízení:</h4>
-                                    <div class="flex flex-wrap gap-2">
-                                        ${deviceList.map(d => `<span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-md">${d}</span>`).join('')}
-                                    </div>
-                                </div>`;
+                            devicesHtml = `<div class="mt-3 pt-3 border-t border-slate-200"><h4 class="font-semibold text-slate-800 text-sm mb-2">Zařízení:</h4><div class="flex flex-wrap gap-2">${deviceList.map(d => `<span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-md">${d}</span>`).join('')}</div></div>`;
                         }
-                        const addToCalcBtn = `
-                            <div class="mt-auto pt-4">
-                                <button class="add-to-calc-btn w-full bg-sky-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-sky-600 transition-colors" data-sku="${task.sku}">
-                                    Přidat do kalkulačky
-                                </button>
-                            </div>`;
-                        cardContent = `
-                            <div class="flex-grow flex flex-col">
-                                <div class="flex-grow">
-                                    <div class="flex justify-between items-start mb-3 gap-2">
-                                        <span class="inline-block ${colorClasses.bg} ${colorClasses.text} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
-                                        <div class="flex items-center gap-2 flex-wrap justify-end relative">
-                                            <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2 py-1 rounded">Bonus: ${task.bonus}</span>
-                                            <span class="text-xs font-mono bg-cyan-100 text-cyan-800 px-2 py-1 rounded">Úkony: ${task.ukony}</span>
-                                            <span class="text-xs font-mono bg-orange-100 text-orange-800 px-2 py-1 rounded">Maska: ${task.mask}</span>
-                                            <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
-                                            <div class="copy-feedback">Zkopírováno!</div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold text-slate-800 text-sm mb-1">Interní popis:</h4>
-                                        <p class="text-sm text-slate-600 mb-3">${task.internal}</p>
-                                    </div>
-                                    ${task.external ? `
-                                    <div class="pt-3 border-t border-slate-200">
-                                        <h4 class="font-semibold text-slate-800 text-sm mb-1">Popis opravy:</h4>
-                                        <div class="relative">
-                                            <p class="description-item text-sm text-slate-900 font-medium cursor-pointer hover:bg-slate-100 p-1 rounded">${task.external}</p>
-                                            <div class="description-copy-feedback">Popis zkopírován!</div>
-                                        </div>
-                                    </div>` : ''}
-                                    ${devicesHtml}
-                                </div>
-                                ${addToCalcBtn}
-                            </div>`;
+                        const addToCalcBtn = `<div class="mt-auto pt-4"><button class="add-to-calc-btn w-full bg-sky-500 text-white font-semibold py-2 px-4 rounded-md hover:bg-sky-600 transition-colors" data-sku="${task.sku}">Přidat do kalkulačky</button></div>`;
+                        cardContent = `<div class="flex-grow flex flex-col"><div class="flex-grow"><div class="flex justify-between items-start mb-3 gap-2"><span class="inline-block ${colorClasses.bg} ${colorClasses.text} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span><div class="flex items-center gap-2 flex-wrap justify-end relative"><span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2 py-1 rounded">Bonus: ${task.bonus}</span><span class="text-xs font-mono bg-cyan-100 text-cyan-800 px-2 py-1 rounded">Úkony: ${task.ukony}</span><span class="text-xs font-mono bg-orange-100 text-orange-800 px-2 py-1 rounded">Maska: ${task.mask}</span><span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span><div class="copy-feedback">Zkopírováno!</div></div></div><div><h4 class="font-semibold text-slate-800 text-sm mb-1">Interní popis:</h4><p class="text-sm text-slate-600 mb-3">${task.internal}</p></div>${task.external ? `<div class="pt-3 border-t border-slate-200"><h4 class="font-semibold text-slate-800 text-sm mb-1">Popis opravy:</h4><div class="relative"><p class="description-item text-sm text-slate-900 font-medium cursor-pointer hover:bg-slate-100 p-1 rounded">${task.external}</p><div class="description-copy-feedback">Popis zkopírován!</div></div></div>` : ''}${devicesHtml}</div>${addToCalcBtn}</div>`;
                     }
                     card.innerHTML = cardContent;
                     tasksGrid.appendChild(card);
                 });
             }
-            
             function setupFilters() {
                 const uniqueCategories = [...new Set(serviceTasksData.map(task => task.category))];
-                uniqueCategories.forEach((category, index) => {
-                    categoryColorMap[category] = colorPalette[index % colorPalette.length];
-                });
+                uniqueCategories.forEach((category, index) => { categoryColorMap[category] = colorPalette[index % colorPalette.length]; });
                 const buttons = ['Vše', ...uniqueCategories];
                 const inactiveClasses = ['bg-slate-200', 'hover:bg-slate-300', 'text-slate-700'];
                 const getActiveButtonClasses = (category) => {
@@ -357,18 +284,11 @@
                     const color = categoryColorMap[category];
                     return [color.filter, 'text-white', 'font-semibold'];
                 };
-                filterButtonsContainer.innerHTML = buttons.map(category => {
-                    const isActive = category === 'Vše';
-                    const buttonClasses = isActive ? getActiveButtonClasses(category).join(' ') : inactiveClasses.join(' ');
-                    return `<button class="filter-btn px-3 py-1.5 text-sm rounded-md transition-colors duration-200 ${buttonClasses}" data-category="${category}">${category}</button>`;
-                }).join('');
+                filterButtonsContainer.innerHTML = buttons.map(category => { const isActive = category === 'Vše'; const buttonClasses = isActive ? getActiveButtonClasses(category).join(' ') : inactiveClasses.join(' '); return `<button class="filter-btn px-3 py-1.5 text-sm rounded-md transition-colors duration-200 ${buttonClasses}" data-category="${category}">${category}</button>`; }).join('');
                 filterButtonsContainer.addEventListener('click', (e) => {
                     const targetButton = e.target.closest('.filter-btn');
                     if (!targetButton) return;
-                    filterButtonsContainer.querySelectorAll('.filter-btn').forEach(btn => {
-                        btn.classList.remove(...getActiveButtonClasses(btn.dataset.category));
-                        btn.classList.add(...inactiveClasses);
-                    });
+                    filterButtonsContainer.querySelectorAll('.filter-btn').forEach(btn => { btn.classList.remove(...getActiveButtonClasses(btn.dataset.category)); btn.classList.add(...inactiveClasses); });
                     const newCategory = targetButton.dataset.category;
                     targetButton.classList.remove(...inactiveClasses);
                     targetButton.classList.add(...getActiveButtonClasses(newCategory));
@@ -377,42 +297,20 @@
                     renderCards();
                 });
             }
-
             function updateCalculatorUI() {
-                let totalBonus = 0;
-                let totalUkony = 0;
-                dailyTasks.forEach(task => {
-                    totalBonus += parseFloat(task.bonus) || 0;
-                    totalUkony += parseFloat(task.ukony) || 0;
-                });
+                let totalBonus = 0, totalUkony = 0;
+                dailyTasks.forEach(task => { totalBonus += parseFloat(task.bonus) || 0; totalUkony += parseFloat(task.ukony) || 0; });
                 totalBonusEl.textContent = totalBonus.toFixed(2);
                 totalUkonyEl.textContent = totalUkony.toFixed(2);
-                const dailyGoal = 7;
-                const progress = Math.min((totalUkony / dailyGoal) * 100, 100);
+                const progress = Math.min((totalUkony / 7) * 100, 100);
                 progressBarEl.style.width = `${progress}%`;
-                progressBarEl.classList.toggle('bg-emerald-500', totalUkony >= dailyGoal);
-                progressBarEl.classList.toggle('bg-sky-500', totalUkony < dailyGoal);
-                if (dailyTasks.length === 0) {
-                    calculatorListEl.innerHTML = `<p class="text-slate-400 text-sm">Zatím žádné úkony.</p>`;
-                } else {
-                    calculatorListEl.innerHTML = dailyTasks.map((task, index) => `
-                        <div class="flex justify-between items-center text-sm p-1 hover:bg-slate-100 rounded">
-                            <span class="truncate pr-2" title="${task.sku} - ${task.internal}">${task.sku} - ${task.internal}</span>
-                            <button class="remove-from-calc-btn text-red-500 hover:text-red-700 font-bold px-1" data-index="${index}">&times;</button>
-                        </div>`).join('');
-                }
+                progressBarEl.classList.toggle('bg-emerald-500', totalUkony >= 7);
+                progressBarEl.classList.toggle('bg-sky-500', totalUkony < 7);
+                if (dailyTasks.length === 0) { calculatorListEl.innerHTML = `<p class="text-slate-400 text-sm">Zatím žádné úkony.</p>`; } else { calculatorListEl.innerHTML = dailyTasks.map((task, index) => `<div class="flex justify-between items-center text-sm p-1 hover:bg-slate-100 rounded"><span class="truncate pr-2" title="${task.sku} - ${task.internal}">${task.sku} - ${task.internal}</span><button class="remove-from-calc-btn text-red-500 hover:text-red-700 font-bold px-1" data-index="${index}">&times;</button></div>`).join(''); }
                 saveDailyTasks();
             }
-
             tasksGrid.addEventListener('click', (e) => {
-                const copyAndShowFeedback = (textToCopy, feedbackElement) => {
-                    navigator.clipboard.writeText(textToCopy).then(() => {
-                        if(feedbackElement) {
-                            feedbackElement.style.opacity = '1';
-                            setTimeout(() => { feedbackElement.style.opacity = '0'; }, 1500);
-                        }
-                    }).catch(err => console.error('Nepodařilo se zkopírovat:', err));
-                };
+                const copyAndShowFeedback = (textToCopy, feedbackElement) => { navigator.clipboard.writeText(textToCopy).then(() => { if(feedbackElement) { feedbackElement.style.opacity = '1'; setTimeout(() => { feedbackElement.style.opacity = '0'; }, 1500); } }).catch(err => console.error('Nepodařilo se zkopírovat:', err)); };
                 const skuItem = e.target.closest('.sku-item');
                 if (skuItem) copyAndShowFeedback(skuItem.dataset.sku, skuItem.nextElementSibling);
                 const descriptionItem = e.target.closest('.description-item');
@@ -429,40 +327,19 @@
                         addToCalcBtn.classList.replace('bg-sky-500', 'bg-emerald-500');
                         addToCalcBtn.classList.replace('hover:bg-sky-600', 'hover:bg-emerald-500');
                         addToCalcBtn.disabled = true;
-                        setTimeout(() => {
-                            addToCalcBtn.innerHTML = originalText;
-                            addToCalcBtn.classList.replace('bg-emerald-500', 'bg-sky-500');
-                            addToCalcBtn.classList.replace('hover:bg-emerald-500', 'hover:bg-sky-600');
-                            addToCalcBtn.disabled = false;
-                        }, 2000);
+                        setTimeout(() => { addToCalcBtn.innerHTML = originalText; addToCalcBtn.classList.replace('bg-emerald-500', 'bg-sky-500'); addToCalcBtn.classList.replace('hover:bg-emerald-500', 'hover:bg-sky-600'); addToCalcBtn.disabled = false; }, 2000);
                     }
                 }
             });
-
             calculatorListEl.addEventListener('click', (e) => {
                 const removeFromCalcBtn = e.target.closest('.remove-from-calc-btn');
-                if (removeFromCalcBtn) {
-                    const index = parseInt(removeFromCalcBtn.dataset.index, 10);
-                    dailyTasks.splice(index, 1);
-                    updateCalculatorUI();
-                }
+                if (removeFromCalcBtn) { const index = parseInt(removeFromCalcBtn.dataset.index, 10); dailyTasks.splice(index, 1); updateCalculatorUI(); }
             });
-
-            resetBtn.addEventListener('click', () => {
-                dailyTasks = [];
-                updateCalculatorUI();
-            });
-
+            resetBtn.addEventListener('click', () => { dailyTasks = []; updateCalculatorUI(); });
             exportBtn.addEventListener('click', () => {
                 if (dailyTasks.length === 0) return;
-                let exportText = `Přehled dne - ${new Date().toLocaleDateString('cs-CZ')}\n`;
-                exportText += '====================================\n';
-                exportText += `Celkový bonus: ${totalBonusEl.textContent}\n`;
-                exportText += `Celkem úkonů: ${totalUkonyEl.textContent}\n`;
-                exportText += '====================================\n\nSeznam úkonů:\n';
-                dailyTasks.forEach(task => {
-                    exportText += `- ${task.sku}: ${task.internal} (Bonus: ${task.bonus}, Úkony: ${task.ukony})\n`;
-                });
+                let exportText = `Přehled dne - ${new Date().toLocaleDateString('cs-CZ')}\n====================================\nCelkový bonus: ${totalBonusEl.textContent}\nCelkem úkonů: ${totalUkonyEl.textContent}\n====================================\n\nSeznam úkonů:\n`;
+                dailyTasks.forEach(task => { exportText += `- ${task.sku}: ${task.internal} (Bonus: ${task.bonus}, Úkony: ${task.ukony})\n`; });
                 const blob = new Blob([exportText], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -473,7 +350,6 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             });
-
             searchInput.addEventListener('input', renderCards);
             
             fetchAndRender();
