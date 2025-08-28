@@ -171,46 +171,44 @@
                 { sku: 'VRATKA', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
             ];
             
+            // --- NOVÁ LOKÁLNÍ DATA PRO KOMPONENTY ---
+            const localComponentData = [
+                // PlayStation 4
+                { sku: 'PS4 (FAT) CUH-10XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-240AR<br>Blu-ray: KEM-860 (čína 490)', bonus: '0', ukony: '0' },
+                { sku: 'PS4 (FAT) CUH-11XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-240CR (N14-240P1A)<br>Blu-ray: KEM-490', bonus: '0', ukony: '0' },
+                { sku: 'PS4 (FAT) CUH-12XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-200ER (N14-200P1A)<br>Blu-ray: 12XX', bonus: '0', ukony: '0' },
+                { sku: 'PS4 (SLIM) CUH-20XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-160CR (N15-160P1A)<br>Blu-ray: 20XX (Čína 2100)', bonus: '0', ukony: '0' },
+                { sku: 'PS4 (SLIM) CUH-21XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-160ER (N16-160P1A)<br>Blu-ray: 21XX', bonus: '0', ukony: '0' },
+                { sku: 'PS4 (SLIM) CUH-22XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-160FR (N17-160P1A)<br>Blu-ray: 21XX', bonus: '0', ukony: '0' },
+                { sku: 'PS4 (PRO) CUH-70XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-300CR<br>Blu-ray: 70XX (čína 7200)', bonus: '0', ukony: '0' },
+                { sku: 'PS4 (PRO) CUH-71XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-300ER (N15-300P1A)<br>Blu-ray: 72XX', bonus: '0', ukony: '0' },
+                { sku: 'PS4 (PRO) CUH-72XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-300FR<br>Blu-ray: 72XX', bonus: '0', ukony: '0' },
+                // Xbox One
+                { sku: 'Xbox One FAT', category: 'Revize komponentů', internal: 'Zdroj: FAT PSU<br>Blu-ray: DG-6M1SS', bonus: '0', ukony: '0' },
+                { sku: 'Xbox One S', category: 'Revize komponentů', internal: 'Zdroj: One S PSU<br>Blu-ray: DG-6M5S(-01B)', bonus: '0', ukony: '0' },
+                { sku: 'Xbox One X', category: 'Revize komponentů', internal: 'Zdroj: One X PSU<br>Blu-ray: DG-6M5S(-02B)', bonus: '0', ukony: '0' },
+                // Xbox Series
+                { sku: 'Xbox Series S', category: 'Revize komponentů', internal: 'Zdroj: Series S PSU<br>Blu-ray: NEMÁ MECHANIKU', bonus: '0', ukony: '0' },
+                { sku: 'Xbox Series X', category: 'Revize komponentů', internal: 'Zdroj: Series X PSU<br>Blu-ray: DG-6M5S(-04B)', bonus: '0', ukony: '0' },
+                // PlayStation 5
+                { sku: 'PS5 CFI-1000', category: 'Revize komponentů', internal: 'Zdroj: ADP-400DR<br>Blu-ray: PS-010', bonus: '0', ukony: '0' },
+                { sku: 'PS5 CFI-1100', category: 'Revize komponentů', internal: 'Zdroj: ADP-400FR<br>Blu-ray: PS-020', bonus: '0', ukony: '0' },
+                { sku: 'PS5 CFI-1200', category: 'Revize komponentů', internal: 'Zdroj: ADP-400ER<br>Blu-ray: PS-1200', bonus: '0', ukony: '0' },
+                { sku: 'PS5 (SLIM) CFI-2000', category: 'Revize komponentů', internal: 'Zdroj: ADP-400GR<br>Blu-ray: ROM', bonus: '0', ukony: '0' }
+            ];
+
             const todayString = new Date().toLocaleDateString('cs-CZ');
             localBuyoutDescriptionsData.forEach(item => { item.internal = item.internal.replace('19.7.2025', todayString); });
             const colorPalette = [{ bg: 'bg-sky-100', text: 'text-sky-800', filter: 'bg-sky-600' }, { bg: 'bg-emerald-100', text: 'text-emerald-800', filter: 'bg-emerald-600' }];
             function saveDailyTasks() { localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks)); }
             function loadDailyTasks() { const savedTasks = localStorage.getItem('dailyTasks'); if (savedTasks) { dailyTasks = JSON.parse(savedTasks); } }
-            
-            // --- ZDE JE OPRAVENÉ POŘADÍ ---
             function parseCSV(csvText) {
-                const lines = csvText.trim().split(/\r\n|\n/);
-                const data = [];
-                const regex = /("([^"]|"")*"|[^,]*)(,|$)/g;
+                const lines = csvText.trim().split(/\r\n|\n/); const data = []; const regex = /("([^"]|"")*"|[^,]*)(,|$)/g;
                 for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i];
-                    if (!line.trim()) continue;
-                    let values = [];
-                    let match;
-                    regex.lastIndex = 0;
-                    while (match = regex.exec(line)) {
-                        let value = match[1];
-                        if (value.startsWith('"') && value.endsWith('"')) {
-                            value = value.slice(1, -1).replace(/""/g, '"');
-                        }
-                        values.push(value.trim());
-                        if (match[3] === '') break;
-                    }
-                    const obj = {
-                        // Pořadí sloupců: 0      1         2         3         4        5        6        7
-                        // Očekávané:     sku, category, internal, external, bonus,   ukony,   devices, mask
-                        sku:      values[0] || '',
-                        category: values[1] || '',
-                        internal: values[2] || '',
-                        external: values[3] || '',
-                        bonus:    values[4] || '0',
-                        ukony:    values[5] || '0',
-                        devices:  values[6] || '',
-                        mask:     values[7] || ''
-                    };
-                    data.push(obj);
-                }
-                return data;
+                    const line = lines[i]; if (!line.trim()) continue; let values = []; let match; regex.lastIndex = 0;
+                    while (match = regex.exec(line)) { let value = match[1]; if (value.startsWith('"') && value.endsWith('"')) { value = value.slice(1, -1).replace(/""/g, '"'); } values.push(value.trim()); if (match[3] === '') break; }
+                    data.push({ sku: values[0] || '', category: values[1] || '', internal: values[2] || '', external: values[3] || '', bonus: values[4] || '0', ukony: values[5] || '0', devices: values[6] || '', mask: values[7] || '' });
+                } return data;
             }
 
             async function fetchAndRender() {
@@ -240,7 +238,8 @@
                     if (!response.ok) { throw new Error(`Chyba při načítání dat z GitHubu: ${response.statusText}.`); }
                     const csvText = await response.text();
                     let parsedData = parseCSV(csvText);
-                    serviceTasksData = parsedData.concat(localControllersData, localBuyoutDescriptionsData);
+                    // SPOJENÍ VŠECH DAT DO JEDNOHO POLE
+                    serviceTasksData = parsedData.concat(localControllersData, localBuyoutDescriptionsData, localComponentData);
                     searchInput.disabled = false;
                     searchInput.placeholder = 'Např. baterie, S0033...';
                     setupFilters();
@@ -257,7 +256,7 @@
             function renderCards() {
                 tasksGrid.innerHTML = '';
                 const searchTerm = searchInput.value.toLowerCase();
-                const filteredData = serviceTasksData.filter(task => (activeFilter === 'Vše' || task.category === activeFilter) && (task.internal.toLowerCase().includes(searchTerm) || (task.external && task.external.toLowerCase().includes(searchTerm)) || task.sku.toLowerCase().includes(searchTerm) || String(task.bonus).toLowerCase().includes(searchTerm) || String(task.ukony).toLowerCase().includes(searchTerm) || task.devices.toLowerCase().includes(searchTerm)));
+                const filteredData = serviceTasksData.filter(task => (activeFilter === 'Vše' || task.category === activeFilter) && (task.internal.toLowerCase().includes(searchTerm) || (task.external && task.external.toLowerCase().includes(searchTerm)) || task.sku.toLowerCase().includes(searchTerm) || String(task.bonus).toLowerCase().includes(searchTerm) || String(task.ukony).toLowerCase().includes(searchTerm) || (task.devices && task.devices.toLowerCase().includes(searchTerm)) ));
                 if (filteredData.length === 0) { tasksGrid.innerHTML = `<p class="text-slate-500 md:col-span-2 xl:col-span-3 text-center p-8">Nebyly nalezeny žádné úkony.</p>`; return; }
                 filteredData.forEach((task) => {
                     const card = document.createElement('div');
@@ -265,9 +264,29 @@
                     card.dataset.category = task.category;
                     const colorClasses = categoryColorMap[task.category] || colorPalette[0];
                     let cardContent = '';
-                    if (task.category === 'Ovladače' || task.category === 'Interní popisek výkupů') {
-                        let title = task.category === 'Ovladače' ? 'Název ovladače:' : `${task.sku}:`;
-                        cardContent = `<div class="flex justify-between items-center mb-3"><span class="inline-block ${colorClasses.bg} ${colorClasses.text} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>${task.sku !== 'PLACEHOLDER' && task.category !== 'Interní popisek výkupů' ? `<div class="relative"><span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span><div class="copy-feedback">Zkopírováno!</div></div>` : ''}</div><div class="relative"><h4 class="font-semibold text-slate-800 text-sm mb-1">${title}</h4><p class="description-item text-sm text-slate-600 whitespace-pre-wrap cursor-pointer hover:bg-slate-100 p-1 rounded">${task.internal}</p><div class="description-copy-feedback">Popis zkopírován!</div></div>`;
+                    // UPRAVENO: Přidána nová kategorie pro speciální zobrazení
+                    if (task.category === 'Ovladače' || task.category === 'Interní popisek výkupů' || task.category === 'Revize komponentů') {
+                        let title = task.sku;
+                        let body = task.internal;
+                        if (task.category === 'Ovladače') {
+                            title = 'Název ovladače:';
+                            body = task.internal;
+                        } else if (task.category === 'Revize komponentů'){
+                            title = task.sku;
+                            body = task.internal;
+                        } else {
+                            title = `${task.sku}:`;
+                            body = `<p class="description-item text-sm text-slate-600 whitespace-pre-wrap cursor-pointer hover:bg-slate-100 p-1 rounded">${task.internal}</p><div class="description-copy-feedback">Popis zkopírován!</div>`;
+                        }
+
+                        cardContent = `
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="inline-block ${colorClasses.bg} ${colorClasses.text} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
+                            </div>
+                            <div class="relative flex-grow flex flex-col">
+                                <h4 class="font-semibold text-slate-800 text-sm mb-2">${title}</h4>
+                                <div class="text-sm text-slate-600">${body}</div>
+                            </div>`;
                     } else {
                         let devicesHtml = '';
                         if (task.devices && task.devices.trim() !== '') {
@@ -305,34 +324,16 @@
                 });
             }
             function updateCalculatorUI() {
-                let totalBonus = 0;
-                let totalUkony = 0;
-                const cleanAndParse = (value) => {
-                    if (typeof value !== 'string') { value = String(value); }
-                    const cleanedValue = value.replace(',', '.');
-                    const number = parseFloat(cleanedValue);
-                    return isNaN(number) ? 0 : number;
-                };
-                dailyTasks.forEach(task => {
-                    totalBonus += cleanAndParse(task.bonus);
-                    totalUkony += cleanAndParse(task.ukony);
-                });
+                let totalBonus = 0, totalUkony = 0;
+                const cleanAndParse = (value) => { if (typeof value !== 'string') { value = String(value); } const cleanedValue = value.replace(',', '.'); const number = parseFloat(cleanedValue); return isNaN(number) ? 0 : number; };
+                dailyTasks.forEach(task => { totalBonus += cleanAndParse(task.bonus); totalUkony += cleanAndParse(task.ukony); });
                 totalBonusEl.textContent = totalBonus.toFixed(2);
                 totalUkonyEl.textContent = totalUkony.toFixed(2);
-                const dailyGoal = 7;
-                const progress = Math.min((totalUkony / dailyGoal) * 100, 100);
+                const progress = Math.min((totalUkony / 7) * 100, 100);
                 progressBarEl.style.width = `${progress}%`;
-                progressBarEl.classList.toggle('bg-emerald-500', totalUkony >= dailyGoal);
-                progressBarEl.classList.toggle('bg-sky-500', totalUkony < dailyGoal);
-                if (dailyTasks.length === 0) {
-                    calculatorListEl.innerHTML = `<p class="text-slate-400 text-sm">Zatím žádné úkony.</p>`;
-                } else {
-                    calculatorListEl.innerHTML = dailyTasks.map((task, index) => `
-                        <div class="flex justify-between items-center text-sm p-1 hover:bg-slate-100 rounded">
-                            <span class="truncate pr-2" title="${task.sku} - ${task.internal}">${task.sku} - ${task.internal}</span>
-                            <button class="remove-from-calc-btn text-red-500 hover:text-red-700 font-bold px-1" data-index="${index}">&times;</button>
-                        </div>`).join('');
-                }
+                progressBarEl.classList.toggle('bg-emerald-500', totalUkony >= 7);
+                progressBarEl.classList.toggle('bg-sky-500', totalUkony < 7);
+                if (dailyTasks.length === 0) { calculatorListEl.innerHTML = `<p class="text-slate-400 text-sm">Zatím žádné úkony.</p>`; } else { calculatorListEl.innerHTML = dailyTasks.map((task, index) => `<div class="flex justify-between items-center text-sm p-1 hover:bg-slate-100 rounded"><span class="truncate pr-2" title="${task.sku} - ${task.internal}">${task.sku} - ${task.internal}</span><button class="remove-from-calc-btn text-red-500 hover:text-red-700 font-bold px-1" data-index="${index}">&times;</button></div>`).join(''); }
                 saveDailyTasks();
             }
             tasksGrid.addEventListener('click', (e) => {
