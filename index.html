@@ -141,7 +141,7 @@
             let activeFilter = 'Vše';
             let dailyTasks = [];
             let categoryColorMap = {};
-
+            // --- LOKÁLNÍ DATA PRO OVLADAČE ---
             const localControllersData = [
                 { sku: 'P77777', category: 'Ovladače', internal: 'DualSense Wireless Controller bílý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
                 { sku: 'P77778', category: 'Ovladače', internal: 'DualSense Wireless Controller mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
@@ -157,6 +157,7 @@
                 { sku: 'P77791', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
                 { sku: 'P77792', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }
             ];
+            // --- LOKÁLNÍ DATA PRO POPIS VÝKUPŮ ---
             const localBuyoutDescriptionsData = [
                 { sku: 'Konzole', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
                 { sku: 'Android', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
@@ -171,7 +172,7 @@
                 { sku: 'VRATKA', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' },
             ];
             
-            // --- NOVÁ LOKÁLNÍ DATA PRO KOMPONENTY ---
+            // --- LOKÁLNÍ DATA PRO KOMPONENTY KONZOLÍ ---
             const localComponentData = [
                 // PlayStation 4
                 { sku: 'PS4 (FAT) CUH-10XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-240AR<br>Blu-ray: KEM-860 (čína 490)', bonus: '0', ukony: '0' },
@@ -193,8 +194,8 @@
                 // PlayStation 5
                 { sku: 'PS5 CFI-1000', category: 'Revize komponentů', internal: 'Zdroj: ADP-400DR<br>Blu-ray: PS-010', bonus: '0', ukony: '0' },
                 { sku: 'PS5 CFI-1100', category: 'Revize komponentů', internal: 'Zdroj: ADP-400FR<br>Blu-ray: PS-020', bonus: '0', ukony: '0' },
-                { sku: 'PS5 CFI-1200', category: 'Revize komponentů', internal: 'Zdroj: ADP-400ER<br>Blu-ray: PS-1200', bonus: '0', ukony: '0' },
-                { sku: 'PS5 (SLIM) CFI-2000', category: 'Revize komponentů', internal: 'Zdroj: ADP-400GR<br>Blu-ray: ROM', bonus: '0', ukony: '0' }
+                { sku: 'PS5 CFI-1200', category: 'Revize komponentů', internal: 'Zdroj: ADP-400ER<br>Blu-ray: PS-1200ROM', bonus: '0', ukony: '0' },
+                { sku: 'PS5 (SLIM) CFI-2000', category: 'Revize komponentů', internal: 'Zdroj: ADP-400GR<br>Blu-ray: NEMÁ MECHANIKU', bonus: '0', ukony: '0' }
             ];
 
             const todayString = new Date().toLocaleDateString('cs-CZ');
