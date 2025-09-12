@@ -20,7 +20,6 @@
 </head>
 <body class="bg-slate-50 text-slate-800">
 
-    <!-- NOVÁ NOTIFIKAČNÍ LIŠTA PRO AKTUALIZACE -->
     <div id="update-notification" class="hidden sticky top-0 z-50 bg-yellow-400 text-yellow-900 text-center p-3 font-semibold shadow-lg">
         Byla nalezena nová verze dat! Pro načtení nejnovějších úkonů <a href="#" onclick="location.reload();" class="underline hover:text-yellow-700">aktualizujte stránku</a>.
         <button onclick="document.getElementById('update-notification').style.display='none'" class="absolute top-1/2 right-4 -translate-y-1/2 font-bold text-xl">&times;</button>
@@ -88,7 +87,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // ... (elementy zůstávají stejné) ...
             const tasksGrid = document.getElementById('tasks-grid');
             const filterButtonsContainer = document.getElementById('filter-buttons');
             const searchInput = document.getElementById('search');
@@ -105,7 +103,6 @@
             let dailyTasks = [];
             let categoryColorMap = {};
             
-            // ... (lokální data zůstávají stejná) ...
             const localControllersData = [ { sku: 'P77777', category: 'Ovladače', internal: 'DualSense Wireless Controller bílý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'P77778', category: 'Ovladače', internal: 'DualSense Wireless Controller mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'P77779', category: 'Ovladače', internal: 'Sony DualShock 4 Controller Black V2', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'P77780', category: 'Ovladače', internal: 'Sony DualShock 4 Controller V2 mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'P77784', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair neonově červený/neonově modrý', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'P77785', category: 'Ovladače', internal: 'Nintendo Joy-Con Pair mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'P77786', category: 'Ovladače', internal: 'Nintendo Switch Pro Controller ovladač mix barev', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'P77787', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'P77788', category: 'Ovladače', internal: 'Xbox Wireless Controller mix barev (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'P77789', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'P77790', category: 'Ovladače', internal: 'Xbox Wireless Controller černý (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'P77791', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (USB-C)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'P77792', category: 'Ovladače', internal: 'Xbox Wireless Controller bílý (micro USB)', external: '', bonus: '0', ukony: '0', devices: '', mask: '' } ];
             const localBuyoutDescriptionsData = [ { sku: 'Konzole', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'Android', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nFunkční testy: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'iPhone', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nRozbitý/neoriginální displej: N\nStav zařízení: Y\nJe LCD originální: Y\nDiagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'iPad', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nFunkční testy: OK\nJe LCD originální: Y\nDiagnostiky: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'Apple Watch', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: Y\nJe LCD originální: Y\nDiagnostiky: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'Apple Pencil/Magic Mouse', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nFunkční test: OK\nStav zařízení: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'MacBook', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nDiagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'iMac, Mac mini, Mac Studio', category: 'Interní popisek výkupů', internal: 'SN zařízení odpovídá kupní smlouvě: Y\nModel se shoduje s kupní smlouvou: Y\nStav zařízení: OK\nDiagnostiky: FT OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'DEMO', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK/ funkční testy\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'ZAPU', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, { sku: 'VRATKA', category: 'Interní popisek výkupů', internal: 'Diagnostiky: OK\nAudio: OK\n\nZpracoval dne: 19.7.2025', external: '', bonus: '0', ukony: '0', devices: '', mask: '' }, ];
             const localComponentData = [ { sku: 'PS4 (FAT) CUH-10XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-240AR<br>Blu-ray: KEM-860 (čína 490)', bonus: '0', ukony: '0' }, { sku: 'PS4 (FAT) CUH-11XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-240CR (N14-240P1A)<br>Blu-ray: KEM-490', bonus: '0', ukony: '0' }, { sku: 'PS4 (FAT) CUH-12XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-200ER (N14-200P1A)<br>Blu-ray: 12XX', bonus: '0', ukony: '0' }, { sku: 'PS4 (SLIM) CUH-20XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-160CR (N15-160P1A)<br>Blu-ray: 20XX (Čína 2100)', bonus: '0', ukony: '0' }, { sku: 'PS4 (SLIM) CUH-21XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-160ER (N16-160P1A)<br>Blu-ray: 21XX', bonus: '0', ukony: '0' }, { sku: 'PS4 (SLIM) CUH-22XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-160FR (N17-160P1A)<br>Blu-ray: 21XX', bonus: '0', ukony: '0' }, { sku: 'PS4 (PRO) CUH-70XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-300CR<br>Blu-ray: 70XX (čína 7200)', bonus: '0', ukony: '0' }, { sku: 'PS4 (PRO) CUH-71XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-300ER (N15-300P1A)<br>Blu-ray: 72XX', bonus: '0', ukony: '0' }, { sku: 'PS4 (PRO) CUH-72XX', category: 'Revize komponentů', internal: 'Zdroj: ADP-300FR<br>Blu-ray: 72XX', bonus: '0', ukony: '0' }, { sku: 'Xbox One FAT', category: 'Revize komponentů', internal: 'Zdroj: FAT PSU<br>Blu-ray: DG-6M1SS', bonus: '0', ukony: '0' }, { sku: 'Xbox One S', category: 'Revize komponentů', internal: 'Zdroj: One S PSU<br>Blu-ray: DG-6M5S(-01B)', bonus: '0', ukony: '0' }, { sku: 'Xbox One X', category: 'Revize komponentů', internal: 'Zdroj: One X PSU<br>Blu-ray: DG-6M5S(-02B)', bonus: '0', ukony: '0' }, { sku: 'Xbox Series S', category: 'Revize komponentů', internal: 'Zdroj: Series S PSU<br>Blu-ray: NEMÁ MECHANIKU', bonus: '0', ukony: '0' }, { sku: 'Xbox Series X', category: 'Revize komponentů', internal: 'Zdroj: Series X PSU<br>Blu-ray: DG-6M5S(-04B)', bonus: '0', ukony: '0' }, { sku: 'PS5 CFI-1000', category: 'Revize komponentů', internal: 'Zdroj: ADP-400DR<br>Blu-ray: PS-010', bonus: '0', ukony: '0' }, { sku: 'PS5 CFI-1100', category: 'Revize komponentů', internal: 'Zdroj: ADP-400FR<br>Blu-ray: PS-020', bonus: '0', ukony: '0' }, { sku: 'PS5 CFI-1200', category: 'Revize komponentů', internal: 'Zdroj: ADP-400ER<br>Blu-ray: PS-1200ROM', bonus: '0', ukony: '0' }, { sku: 'PS5 (SLIM) CFI-2000', category: 'Revize komponentů', internal: 'Zdroj: ADP-400GR<br>Blu-ray: NEMÁ MECHANIKU', bonus: '0', ukony: '0' } ];
@@ -117,22 +114,18 @@
             function loadDailyTasks() { const savedTasks = localStorage.getItem('dailyTasks'); if (savedTasks) { dailyTasks = JSON.parse(savedTasks); } }
             function parseCSV(csvText) { const lines = csvText.trim().split(/\r\n|\n/); const data = []; const regex = /("([^"]|"")*"|[^,]*)(,|$)/g; for (let i = 1; i < lines.length; i++) { const line = lines[i]; if (!line.trim()) continue; let values = []; let match; regex.lastIndex = 0; while (match = regex.exec(line)) { let value = match[1]; if (value.startsWith('"') && value.endsWith('"')) { value = value.slice(1, -1).replace(/""/g, '"'); } values.push(value.trim()); if (match[3] === '') break; } data.push({ sku: values[0] || '', category: values[1] || '', internal: values[2] || '', external: values[3] || '', bonus: values[4] || '0', ukony: values[5] || '0', devices: values[6] || '', mask: values[7] || '' }); } return data; }
 
-            // NOVÁ FUNKCE PRO KONTROLU AKTUALIZACÍ
             async function checkForUpdates() {
-                // TUTO VERZI RUČNĚ AKTUALIZUJTE, KDYŽ VYTVÁŘÍTE NOVÝ SOUBOR
-                const APP_VERSION = '202509111545'; 
-                
-                // ZDE VLOŽTE ODKAZ NA PUBLIKOVANÝ LIST "Verze"
+                const APP_VERSION = '202509121020'; // Příklad verze
                 const versionCheckUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpvGTMrAHYUgGKsp4pxWyRW6rflrYQdEdr2g3ldqttMfH5i7FBLDlAeX-NsSHWgzWPDZQYClIrApYO/pub?gid=348777476&single=true&output=csv';
 
-                if (versionCheckUrl === 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpvGTMrAHYUgGKsp4pxWyRW6rflrYQdEdr2g3ldqttMfH5i7FBLDlAeX-NsSHWgzWPDZQYClIrApYO/pub?gid=348777476&single=true&output=csv') return; // Nekontrolovat, pokud není URL vyplněna
+                // --- TENTO ŘÁDEK BYL ODSTRANĚN ---
+                // if (versionCheckUrl === '...') return;
 
                 try {
                     const response = await fetch(versionCheckUrl);
-                    if (!response.ok) return; // Selhání ignorujeme, nebudeme uživatele obtěžovat
+                    if (!response.ok) return;
                     const latestVersion = await response.text();
                     
-                    // Porovnáváme jako čísla pro správné vyhodnocení
                     if (parseFloat(latestVersion.trim()) > parseFloat(APP_VERSION)) {
                         updateNotification.style.display = 'block';
                     }
@@ -175,7 +168,7 @@
                     loadDailyTasks();
                     updateCalculatorUI();
                     renderCards();
-                    checkForUpdates(); // ZAVOLÁNÍ KONTROLY AKTUALIZACÍ PO ÚSPĚŠNÉM NAČTENÍ
+                    checkForUpdates();
                 } catch (error) {
                     tasksGrid.innerHTML = `<p class="text-red-500 font-semibold md:col-span-2 xl:col-span-3 text-center p-8">${error.message}</p>`;
                 } finally {
