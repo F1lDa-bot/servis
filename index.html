@@ -32,7 +32,7 @@
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2">
+            <div class="lg-col-span-2">
                 <div class="bg-white p-6 rounded-xl shadow-sm mb-8">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="md:col-span-1">
@@ -114,25 +114,21 @@
             function loadDailyTasks() { const savedTasks = localStorage.getItem('dailyTasks'); if (savedTasks) { dailyTasks = JSON.parse(savedTasks); } }
             function parseCSV(csvText) { const lines = csvText.trim().split(/\r\n|\n/); const data = []; const regex = /("([^"]|"")*"|[^,]*)(,|$)/g; for (let i = 1; i < lines.length; i++) { const line = lines[i]; if (!line.trim()) continue; let values = []; let match; regex.lastIndex = 0; while (match = regex.exec(line)) { let value = match[1]; if (value.startsWith('"') && value.endsWith('"')) { value = value.slice(1, -1).replace(/""/g, '"'); } values.push(value.trim()); if (match[3] === '') break; } data.push({ sku: values[0] || '', category: values[1] || '', internal: values[2] || '', external: values[3] || '', bonus: values[4] || '0', ukony: values[5] || '0', devices: values[6] || '', mask: values[7] || '' }); } return data; }
             
-            // --- FUNKCE PRO KONTROLU A ULOŽENÍ VERZE ---
-            async function checkAndStoreVersion() {
+            // --- PŘEPRACOVANÁ FUNKCE PRO KONTROLU VERZE ---
+            async function checkForUpdates() {
                 const versionCheckUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTpvGTMrAHYUgGKsp4pxWyRW6rflrYQdEdr2g3ldqttMfH5i7FBLDlAeX-NsSHWgzWPDZQYClIrApYO/pub?gid=348777476&single=true&output=csv';
                 const localVersion = localStorage.getItem('dataVersion') || '0';
 
                 try {
-                    const response = await fetch(versionCheckUrl);
+                    // Přidáme náhodný parametr, abychom obešli cache prohlížeče
+                    const response = await fetch(`${versionCheckUrl}&t=${new Date().getTime()}`);
                     if (!response.ok) return;
                     const latestVersion = await response.text();
                     const latestVersionClean = latestVersion.trim();
-
-                    // Krok 1: Porovnej verze a případně zobraz notifikaci
+                    
                     if (parseFloat(latestVersionClean) > parseFloat(localVersion)) {
                         updateNotification.style.display = 'block';
                     }
-
-                    // Krok 2: Vždy ulož nejnovější verzi, kterou jsme právě úspěšně načetli
-                    localStorage.setItem('dataVersion', latestVersionClean);
-
                 } catch (error) {
                     console.error("Kontrola aktualizací selhala:", error);
                 }
@@ -172,10 +168,12 @@
                     loadDailyTasks();
                     updateCalculatorUI();
                     renderCards();
-                    
-                    // Zavolání nové funkce pro správu verzí
-                    checkAndStoreVersion();
 
+                    // Po úspěšném načtení dat uložíme aktuální verzi
+                    const versionResponse = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vTpvGTMrAHYUgGKsp4pxWyRW6rflrYQdEdr2g3ldqttMfH5i7FBLDlAeX-NsSHWgzWPDZQYClIrApYO/pub?gid=348777476&single=true&output=csv');
+                    const latestVersionText = await versionResponse.text();
+                    localStorage.setItem('dataVersion', latestVersionText.trim());
+                    
                 } catch (error) {
                     tasksGrid.innerHTML = `<p class="text-red-500 font-semibold md:col-span-2 xl:col-span-3 text-center p-8">${error.message}</p>`;
                 } finally {
@@ -183,6 +181,7 @@
                 }
             }
             
+            // Zbytek kódu zůstává stejný
             function renderCards() {
                 tasksGrid.innerHTML = '';
                 const searchTerm = searchInput.value.toLowerCase();
@@ -300,7 +299,14 @@
             });
             searchInput.addEventListener('input', renderCards);
             
+            // --- SPUŠTĚNÍ CELÉ APLIKACE ---
             fetchAndRender();
+            
+            // Spustí periodickou kontrolu na pozadí každých 5 minut
+            setInterval(checkForUpdates, 300000); 
+
+            // Zkontroluje verzi i při návratu do okna prohlížeče
+            window.addEventListener('focus', checkForUpdates);
         });
     </script>
 </body>
