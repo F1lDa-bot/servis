@@ -164,7 +164,6 @@
                     loadDailyTasks();
                     updateCalculatorUI();
                     renderCards();
-                    
                     const versionResponse = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vTpvGTMrAHYUgGKsp4pxWyRW6rflrYQdEdr2g3ldqttMfH5i7FBLDlAeX-NsSHWgzWPDZQYClIrApYO/pub?gid=348777476&single=true&output=csv');
                     if(versionResponse.ok){
                         const latestVersionText = await versionResponse.text();
@@ -191,9 +190,17 @@
                     if (task.category === 'Ovladače' || task.category === 'Interní popisek výkupů' || task.category === 'Revize komponentů') {
                         let title = task.sku;
                         let body = task.internal;
+                        let skuDisplay = ''; // Zde budeme držet HTML pro SKU
+                        
+                        // --- OPRAVA ZDE ---
+                        // Přidáme SKU pro ovladače, ale schováme ho pro ostatní speciální kategorie
                         if (task.category === 'Ovladače') {
                             title = 'Název ovladače:';
                             body = task.internal;
+                            skuDisplay = `<div class="relative">
+                                <span class="sku-item text-xs font-mono bg-slate-200 text-slate-700 px-2 py-1 rounded cursor-pointer hover:bg-slate-300" data-sku="${task.sku}">SK: ${task.sku}</span>
+                                <div class="copy-feedback">Zkopírováno!</div>
+                            </div>`;
                         } else if (task.category === 'Revize komponentů'){
                             title = task.sku;
                             body = task.internal;
@@ -201,7 +208,16 @@
                             title = `${task.sku}:`;
                             body = `<p class="description-item text-sm text-slate-600 whitespace-pre-wrap cursor-pointer hover:bg-slate-100 p-1 rounded">${task.internal}</p><div class="description-copy-feedback">Popis zkopírován!</div>`;
                         }
-                        cardContent = `<div class="flex justify-between items-center mb-3"><span class="inline-block ${colorClasses.bg} ${colorClasses.text} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span></div><div class="relative flex-grow flex flex-col"><h4 class="font-semibold text-slate-800 text-sm mb-2">${title}</h4><div class="text-sm text-slate-600">${body}</div></div>`;
+                        
+                        cardContent = `
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="inline-block ${colorClasses.bg} ${colorClasses.text} text-xs font-semibold px-2.5 py-0.5 rounded-full whitespace-nowrap">${task.category}</span>
+                                ${skuDisplay}
+                            </div>
+                            <div class="relative flex-grow flex flex-col">
+                                <h4 class="font-semibold text-slate-800 text-sm mb-2">${title}</h4>
+                                <div class="text-sm text-slate-600">${body}</div>
+                            </div>`;
                     } else {
                         let devicesHtml = '';
                         if (task.devices && task.devices.trim() !== '') {
@@ -294,17 +310,12 @@
             });
             searchInput.addEventListener('input', renderCards);
             
-            // --- OPRAVENÉ SPUŠTĚNÍ APLIKACE ---
             async function initializeApp() {
-                // Nejprve zkontrolujeme verzi na pozadí, aniž bychom blokovali načítání
                 checkForUpdates();
-                // Spustíme hlavní načítání dat a animaci
                 await fetchAndRender();
-                // Až po úspěšném načtení spustíme periodickou kontrolu
-                setInterval(checkForUpdates, 300000); // Každých 5 minut
+                setInterval(checkForUpdates, 300000); 
                 window.addEventListener('focus', checkForUpdates);
             }
-
             initializeApp();
         });
     </script>
